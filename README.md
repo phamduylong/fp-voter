@@ -1,2 +1,1 @@
-# fp-voter
-Abra kadabra
+Fingerprint Voting System
