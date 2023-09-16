@@ -3,16 +3,16 @@
 	let strength = 0;
 	let validations = []
     let submit;
+    let username;
+    let password = ""
     $: props = {
 		value: 0,
 		max: 3,
 	};
 
-	function validatePassword(e) {
-		const password = e.target.value
-
+	function validatePassword() {
 		validations = [
-			(password.length > 5),
+			(password.search(/[A-Za-z0-9]{5}/) > -1),
 			(password.search(/[A-Z]/) > -1),
 			(password.search(/[0-9]/) > -1),
 		]
@@ -20,8 +20,14 @@
 		strength = validations.reduce((acc, cur) => acc + cur )
         props.value = strength
 
-        if(strength == 3){
+        if(strength == 3 && username != "" && username != undefined){
             submit.disabled = false
+            submit.style = "border: 3px solid #73AD21;"
+
+        }else{
+            submit.disabled = true
+            submit.style = "border: 3px solid orangered;"
+
         }
 
 	}
@@ -48,7 +54,7 @@
 	}
     
     #submit{
-        border: 2px solid blue;
+        border: 3px solid #73AD21;
         border-radius: 25px;
         background: none;
         padding: 15px;
@@ -84,13 +90,6 @@
 		/* transition: border 500ms; */
 	}
 
-	.input:valid {
-		color: black;
-	}
-
-	input:invalid {
-		color: orangered;
-	}
 
 /* border animation */
 	.field::after {
@@ -99,7 +98,7 @@
 		display: block;
 		height: 4px;
 		width: 100%;
-		background: #d16dff;
+		background: black;
 		transform: scaleX(0);
 		transform-origin: 0%;
 		/* opacity: 0; */
@@ -150,15 +149,15 @@
 	<form id='main'>
         <h1 id= "register">Register</h1>
 		<div class="field">
-			<input type="username" name="username" class="input" placeholder="" required/>
+			<input type="username" name="username" class="input" placeholder="" bind:value={username} on:input={validatePassword} required/>
 			<label for="username" class="label">Username</label>
 		</div>
 
 		<div class="field">
-			<input type="password"  name="password" class="input" placeholder="" on:input={validatePassword} /> 
+			<input type="password"  name="password" class="input" placeholder="" bind:value={password} on:input={validatePassword}  /> 
 			<label for="password" class="label">Password</label>
 		</div>
-        <button type="submit" id="submit" disabled={true} bind:this={submit}>Create Account!</button>
+        <button type="submit" id="submit" disabled={true} bind:this={submit} style="border: 3px solid orangered;">Create Account!</button>
 		<div class="strength">
             <ProgressBar label="Progress Bar"  value={props.value} max={props.max} fill="blue"/>
 		</div>
