@@ -13,6 +13,6 @@
 
 <ul>
     {#each test as t}
-    <li>{t.artist}</li>
+    <li>Username : {t.Username}    Recent Votes:{t.Vote}</li>
     {/each}
 </ul>
