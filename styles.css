@@ -1,0 +1,17 @@
+span {
+    display: flex;
+    justify-content: space-around;
+}
+
+#login-panel {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    align-items: center;
+}
+
+#login-panel > * {
+    display: block;
+    margin: 20px 0;
+}
