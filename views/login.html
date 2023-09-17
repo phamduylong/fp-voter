@@ -1,28 +1,26 @@
 <!DOCTYPE html>
 <html lang="en-US">
   <head>
-    <meta name="xel-theme" content="node_modules/xel/themes/adwaita.css">
-    <script src="node_modules/xel/xel.js" type="module"></script>
+    <meta name="xel-theme" content="../node_modules/xel/themes/adwaita.css">
+    <script src="../node_modules/xel/xel.js" type="module"></script>
     <meta charset="UTF-8">
     <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'">
-    <link href="./styles.css" rel="stylesheet">
+    <link href="../styles/styles.css" rel="stylesheet">
     <title>Hello World!</title>
   </head>
   <body>
     <form id="login-panel">
       <h1>Login</h1>
-      <span>
+      <span class="input-row">
         <x-input type="text" required><x-label>Username</x-label></x-input>
       </span>
-      <span>
+      <span class="input-row">
         <x-input type="password" required><x-label>Password</x-label></x-input>
       </span>
-      <span>
+      <span id="login-submit-btn">
         <x-button type="submit">Submit</x-button>
       </span>
     </form>
-    <!-- You can also require other files to run in this process -->
-    <script src="./renderer.js"></script>
   </body>
 </html>
