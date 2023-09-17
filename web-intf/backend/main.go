@@ -14,14 +14,17 @@ import (
 	"os"
 )
 
-type user struct {
+type registeredUser struct {
 	ID       string   `json:"id"`
 	Username string   `json:"Username"`
 	Password string   `json:"Password"`
 	Vote     []string `json:"Vote"`
 }
 
-var users = []user{
+
+
+
+var users = []registeredUser{
 	{ID: "1", Username: "user001", Password: "password001", Vote: []string{"aaa", "bbb", "ccc"}},
 	{ID: "2", Username: "user002", Password: "password002", Vote: []string{"bbb", "ddd"}},
 	{ID: "3", Username: "user003", Password: "password003", Vote: []string{"aaa"}},
@@ -83,13 +86,32 @@ func CORSMiddleware() gin.HandlerFunc {
 		c.Next()
 	}
 }
+
+func setCookieHandler(c *gin.Context) {
+    c.SetCookie("user", "John Doe", 3600, "/", "localhost", false, true)
+    c.String(http.StatusOK, "Cookie has been set")
+}
+
+func get_register_data(c *gin.Context){
+
+	user := c.PostForm("username")
+	pass := c.PostForm("password")
+
+	fmt.Printf("user: %s, password %s", user, pass)
+}
+
 func main() {
 	uri := connect_db()
 	data := get_data((uri))
 	fmt.Printf("%s\n", data)
 	router := gin.Default()
 	router.Use(CORSMiddleware())
+
+
+	router.GET("/cookie", setCookieHandler)
 	router.GET("/data", get_json_data)
+	router.POST("/register/user", get_register_data) 
+
 	router.Run("localhost:8080")
 
 }
