@@ -98,6 +98,7 @@ func get_register_data(c *gin.Context){
 	pass := c.PostForm("password")
 
 	fmt.Printf("user: %s, password %s", user, pass)
+	c.Redirect(http.StatusFound, "http://localhost:8081/login")
 }
 
 func main() {

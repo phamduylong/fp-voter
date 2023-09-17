@@ -29,12 +29,15 @@
         }
     }
 
-   
 
 </script>
 
 <main>
-    <form id="main" target="_blank" method="post" action= "http://localhost:8080/register/user">
+    <form
+        id="main"
+        method="post"
+        action="http://localhost:8080/register/user"
+    >
         <h1 id="register">Register</h1>
         <div class="field">
             <input
