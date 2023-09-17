@@ -7,11 +7,13 @@ function createWindow () {
   const mainWindow = new BrowserWindow({
     webPreferences: {
       preload: path.join(__dirname, 'preload.js')
-    }
+    },
+    height: 900,
+    width: 1200,
   })
 
   // and load the index.html of the app.
-  mainWindow.loadFile('login.html')
+  mainWindow.loadFile(path.join(__dirname, 'views/login.html'))
 
   // Open the DevTools.
   // mainWindow.webContents.openDevTools()
