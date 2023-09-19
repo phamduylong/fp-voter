@@ -59,7 +59,7 @@ onMount(async function () {
             <label for="password" class="label">Password</label>
         </div>
         <a href="http://localhost:8081/register">
-            <span id="createAccount">Create An Account Here If You Don't Have An Account!</span>
+            <span id="createAccount">Click Here To Create An Account!</span>
         </a> 
         <button
             type="submit"
@@ -103,6 +103,8 @@ onMount(async function () {
         position: relative;
         font-weight: 700;
         width: 154px;
+        display: inline-block;
+        margin-top: 20px;
     }
 
     #login {
@@ -180,8 +182,11 @@ onMount(async function () {
 
     #createAccount{
         position: relative;
-        left: 3vh; 
-        padding-bottom: 20px; 
+        left: 7vh; 
+        margin-bottom: 10px;
+        font-size: 20px;
+        text-decoration: underline;
+        color:blue;
     }
 
 </style>
