@@ -1,24 +1,19 @@
 <script>
     import { onMount } from "svelte";
-    let strength = 0;
-    let validations = [];
+
     let submit;
     let username;
     let password = "";
-    $: props = {
-        value: 0,
-        max: 3,
-    };
-    let err_code = 0 
+    let errCode = 0 
     let invalid
 
 
 
 onMount(async function () {
   const response = await fetch("http://localhost:8080/login/user");
-  err_code = await response.json();
-  console.log(err_code);
-  if(err_code == 1){
+  errCode = await response.json();
+  console.log(errCode);
+  if(errCode == 1){
     invalid.innerText = "Error! Username Or Password Incorrect"
     invalid.style.color = "red"
   }
@@ -29,41 +24,39 @@ onMount(async function () {
 
 <main>
     <form
-        id="main"
+        id="loginForm"
         method="post"
         action="http://localhost:8080/login/user"
     >
         <h1 id="login">Login</h1>
         <span id="invalid" bind:this={invalid}></span>
-        <div class="field">
+        <div class="inputField">
             <input
-                type="username"
+                type="text"
                 name="username"
                 class="input"
-                placeholder=""
                 bind:value={username}
                 required
             />
             <label for="username" class="label">Username</label>
         </div>
 
-        <div class="field">
+        <div class="inputField">
             <input
                 type="password"
                 name="password"
                 class="input"
-                placeholder=""
                 bind:value={password}
 
             />
             <label for="password" class="label">Password</label>
         </div>
         <a href="http://localhost:8081/register">
-            <span id="createAccount">Click Here To Create An Account!</span>
+            <span id="createAccountLink">Click Here To Create An Account!</span>
         </a> 
         <button
             type="submit"
-            id="submit"
+            id="submitForm"
             bind:this={submit}
             style="border: 3px solid #73ad21;">Login</button
         >
@@ -81,7 +74,7 @@ onMount(async function () {
     * {
         font-family: "Kanit", sans-serif;
     }
-    #main {
+    #loginForm {
         position: relative;
         --text-color: black;
         max-width: 500px;
@@ -93,7 +86,7 @@ onMount(async function () {
         padding: 20px;
     }
 
-    #submit {
+    #submitForm {
         border: 3px solid #73ad21;
         border-radius: 25px;
         background: none;
@@ -115,7 +108,7 @@ onMount(async function () {
         font-weight: 700;
         
     }
-    .field {
+    .inputField {
         width: 100%;
         position: relative;
         border-bottom: 2px dashed black;
@@ -135,7 +128,7 @@ onMount(async function () {
     }
 
     /* border animation */
-    .field::after {
+    .inputField::after {
         content: "";
         position: relative;
         display: block;
@@ -149,11 +142,11 @@ onMount(async function () {
         top: 2px;
     }
 
-    .field:focus-within {
+    .inputField:focus-within {
         border-color: transparent;
     }
 
-    .field:focus-within::after {
+    .inputField:focus-within::after {
         transform: scaleX(1);
         opacity: 1;
     }
@@ -167,7 +160,7 @@ onMount(async function () {
         transition: transform 400ms;
     }
 
-    .field:focus-within .label,
+    .inputField:focus-within .label,
     .input:not(:placeholder-shown) + .label {
         transform: scale(0.8) translateY(-5rem);
         opacity: 1;
@@ -180,7 +173,7 @@ onMount(async function () {
         left: 8vh;
     }
 
-    #createAccount{
+    #createAccountLink{
         position: relative;
         left: 7vh; 
         margin-bottom: 10px;

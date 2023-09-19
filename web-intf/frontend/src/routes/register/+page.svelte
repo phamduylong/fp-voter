@@ -5,7 +5,7 @@
     let submit;
     let username;
     let password = "";
-    $: props = {
+    $: passwordStrengthBar = {
         value: 0,
         max: 3,
     };
@@ -18,7 +18,7 @@
         ];
 
         strength = validations.reduce((acc, cur) => acc + cur);
-        props.value = strength;
+        passwordStrengthBar.value = strength;
 
         if (strength == 3 && username != "" && username != undefined) {
             submit.disabled = false;
@@ -34,17 +34,16 @@
 
 <main>
     <form
-        id="main"
+        id="registerForm"
         method="post"
         action="http://localhost:8080/register/user"
     >
         <h1 id="register">Register</h1>
-        <div class="field">
+        <div class="inputField">
             <input
-                type="username"
+                type="text"
                 name="username"
                 class="input"
-                placeholder=""
                 bind:value={username}
                 on:input={validatePassword}
                 required
@@ -52,12 +51,11 @@
             <label for="username" class="label">Username</label>
         </div>
 
-        <div class="field">
+        <div class="inputField">
             <input
                 type="password"
                 name="password"
                 class="input"
-                placeholder=""
                 bind:value={password}
                 on:input={validatePassword}
             />
@@ -68,15 +66,13 @@
             id="submit"
             disabled={true}
             bind:this={submit}
-            onclick="window.location.href = 'http://localhost:8081/login'"
             style="border: 3px solid orangered;">Create Account!</button
         >
         <div class="strength">
             <ProgressBar
                 label="Progress Bar"
-                value={props.value}
-                max={props.max}
-                fill="blue"
+                value={passwordStrengthBar.value}
+                max={passwordStrengthBar.max}
             />
         </div>
 
@@ -97,7 +93,7 @@
     * {
         font-family: "Kanit", sans-serif;
     }
-    #main {
+    #registerForm {
         position: relative;
         --text-color: black;
         max-width: 500px;
@@ -126,7 +122,7 @@
         font-size: 25px;
         font-weight: 700;
     }
-    .field {
+    .inputField {
         width: 100%;
         position: relative;
         border-bottom: 2px dashed black;
@@ -146,7 +142,7 @@
     }
 
     /* border animation */
-    .field::after {
+    .inputField::after {
         content: "";
         position: relative;
         display: block;
@@ -160,11 +156,11 @@
         top: 2px;
     }
 
-    .field:focus-within {
+    .inputField:focus-within {
         border-color: transparent;
     }
 
-    .field:focus-within::after {
+    .inputField:focus-within::after {
         transform: scaleX(1);
         opacity: 1;
     }
@@ -178,7 +174,7 @@
         transition: transform 400ms;
     }
 
-    .field:focus-within .label,
+    .inputField:focus-within .label,
     .input:not(:placeholder-shown) + .label {
         transform: scale(0.8) translateY(-5rem);
         opacity: 1;
