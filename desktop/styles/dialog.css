@@ -1,0 +1,4 @@
+#error-dialog-title {
+    display: flex; 
+    flex-direction: row;
+  }
