@@ -1,5 +1,6 @@
 <script>
     import { ProgressBar } from "@skeletonlabs/skeleton";
+    import { onMount } from "svelte";
     let strength = 0;
     let validations = [];
     let submit;
@@ -28,16 +29,36 @@
             submit.style = "border: 3px solid orangered;";
         }
     }
+    /*
+    onMount(async function () {
+        const response = await fetch("http://localhost:8080/register/user");
+        errCode = await response.json();
+        console.log(errCode)
+        
+    });
+    */
+    
+    async function postUserData(){
+        const user = {username: username, password: password}
+        const response = await fetch("http://localhost:8000/register", {
+            method: "POST", // *GET, POST, PUT, DELETE, etc.
+            referrer: "about:client", // or "" to send no Referer header,
+            // or an url from the current origin
+            referrerPolicy: "no-referrer", // no-referrer-when-downgrade, no-referrer, origin, same-origin...
+            mode: "cors", // same-origin, no-cors
+            headers: {
+            "Content-Type": "application/json",
+            },
+            body: JSON.stringify(user), // body data type must match "Content-Type" header
+        });
+        console.log(response.json()) // parses JSON response into native JavaScript objects
+    }
 
-
+    
 </script>
 
 <main>
-    <form
-        id="registerForm"
-        method="post"
-        action="http://localhost:8080/register/user"
-    >
+    <form id="registerForm" on:submit|preventDefault={postUserData}>
         <h1 id="register">Register</h1>
         <div class="inputField">
             <input
