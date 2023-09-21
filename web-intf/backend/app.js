@@ -1,25 +1,16 @@
 const express = require('express');
 const app = express();
 const bodyParser = require('body-parser');
-const cookieParser = require('cookie-parser');
-const http = require('http');
-const server = http.createServer(app);
-const cors = require('cors')
-const mongoose = require('mongoose')
-const { MongoClient, ServerApiVersion } = require('mongodb');
-const dotenv = require('dotenv')
-const Canidate = require('./models/canidate')
-const User = require('./models/user')
+const cors = require('cors');
+const dotenv = require('dotenv');
+const { connectToDb, addNewUser, countUsersWithCriteria } = require('./hooks');
 
-// Middlewares
 app.use(bodyParser.urlencoded({extended: true}));
-app.use(cookieParser());
 app.use(cors());
 
 /* MIDDLEWARES */
 dotenv.config()
-app.use(bodyParser.urlencoded({extended: true}));
-app.use(cookieParser());
+app.use(bodyParser.json());
 
 app.all('*', function (req, res, next) {
     res.set({
@@ -31,64 +22,24 @@ app.all('*', function (req, res, next) {
     next();
 });
 
-//app.set('view engine', 'ejs');
-//app.set('views', path.join(__dirname, 'views'));
-
-
-// Defining constants
 const PORT = process.env.PORT || 8080;
-const mongoUri = process.env.MONGODB_URI
-let username, password = ""
-let error = 0
-console.log(mongoUri)
-async function connectToDB() {
-    await mongoose.connect(mongoUri)
-    .catch((error) => {
-        console.log(error)
-    });
-    
-  }
-connectToDB();
+connectToDb();
 
-
-//Rendering to the login page
-
-
-app.post('/register', async(req,res)=>{
-    username = req.body.username
-    password = req.body.password
-    console.log(username,password)
-    let msg = {"error": "yo"}
-    const user = await User.find({username: username})
-    if (user == []){
-        saveUserToDB(username,password,true)
-    }else{
-        res.set({
-            "Connection": "Keep-Alive",
-            "Keep-Alive": "timeout=5, max=1000",
-            "Content-Type": "application/json; charset=utf-8",
-            "Access-Control-Allow-Origin": "*",
-        });
-        return res.send(msg)
+app.post('/register', async(req, res) => {
+    const username = req.body.username;
+    const password = req.body.password;
+    const criteria = {username: username};
+    try {
+        const userExist = await countUsersWithCriteria(criteria) > 0;
+        if (!userExist) {               
+            const userSaved = addNewUser(username, password, false);
+            if (userSaved) return res.status(200).send({message: "User saved successfully"});
+            else return res.status(500).send({error: "Error saving user"});
+        } else {
+            return res.status(400).send({error: "User already exists"});
+        }
+    } catch (error) {
+        return res.status(500).send({error: error});
     }
-})
-
-app.get('/error', (req, res) => {
-    res.redirect('http://localhost:8081/login');
-  });
-
-
-
-
-
-async function saveUserToDB(username,password,role){
-    const user = new User({
-        username: username,
-        password: password,
-        id: 0,
-        isAdmin: role
-    })
-    await user.save();
-}
-
-server.listen(PORT) ;
+});
+app.listen(PORT) ;

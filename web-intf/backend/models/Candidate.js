@@ -1,10 +1,8 @@
 const mongoose = require("mongoose");
 
-
 const Schema = mongoose.Schema;
 
-//defining canidate schema
-const canidateSchema = new Schema({
+const candidateSchema = new Schema({
   name: { type: String, required: true },
   age: { type: Number, required: true },
   id: { type: Number, required: true },
@@ -12,4 +10,4 @@ const canidateSchema = new Schema({
 });
 
 //Export model
-module.exports = mongoose.model("Canidate", canidateSchema);
+module.exports = mongoose.model("Candidate", candidateSchema);
