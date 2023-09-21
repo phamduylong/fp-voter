@@ -1,10 +1,6 @@
 <script>
     import { ProgressBar } from "@skeletonlabs/skeleton";
-    let strength = 0;
-    let validations = [];
-    let submit;
-    let username;
-    let password = "";
+    let strength = 0, validations = [], submit, username = "", password = "";
     $: passwordStrengthBar = {
         value: 0,
         max: 3,
@@ -28,16 +24,33 @@
             submit.style = "border: 3px solid orangered;";
         }
     }
+    
+    async function postUserData() {
+        console.log(username, password);
+        const user = {username: username, password: password};
+        fetch("http://localhost:8080/register", {
+            method: "POST",
+            referrerPolicy: "no-referrer", 
+            mode: "cors",
+            headers: {
+                "Content-Type": "application/json",
+                "Access-Control-Allow-Origin": "*",
+            },
+            body: JSON.stringify(user), 
+        }).then((res) => {
+            if(res.status == 200) {
+                // handle with a message box along with a link to redirect to login page?
+            }
+        }).catch(err => {
+            // also a modal to tell user the error
+        });
+    }
 
-
+    
 </script>
 
 <main>
-    <form
-        id="registerForm"
-        method="post"
-        action="http://localhost:8080/register/user"
-    >
+    <form id="registerForm" on:submit|preventDefault={postUserData}>
         <h1 id="register">Register</h1>
         <div class="inputField">
             <input
@@ -127,7 +140,6 @@
         position: relative;
         border-bottom: 2px dashed black;
         margin: 4rem auto 1rem;
-        /* transition: 500ms; */
     }
 
     .input {
@@ -138,10 +150,8 @@
         background: none;
         color: black;
         font-size: 1.2rem;
-        /* transition: border 500ms; */
     }
 
-    /* border animation */
     .inputField::after {
         content: "";
         position: relative;
@@ -151,7 +161,6 @@
         background: black;
         transform: scaleX(0);
         transform-origin: 0%;
-        /* opacity: 0; */
         transition: transform 500ms ease;
         top: 2px;
     }
@@ -165,7 +174,6 @@
         opacity: 1;
     }
 
-    /* label animation */
     .label {
         z-index: -1;
         position: absolute;
@@ -179,8 +187,6 @@
         transform: scale(0.8) translateY(-5rem);
         opacity: 1;
     }
-
-    /* strength meter */
 
     .strength {
         display: flex;
