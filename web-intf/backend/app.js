@@ -21,11 +21,20 @@ app.use(cors())
 dotenv.config()
 
 
+/* MIDDLEWARES */
+dotenv.config()
+app.use(bodyParser.json());
 
+app.all('*', function (req, res, next) {
+    res.set({
+        "Connection": "Keep-Alive",
+        "Keep-Alive": "timeout=5, max=1000",
+        "Content-Type": "application/json; charset=utf-8",
+        "Access-Control-Allow-Origin": "*",
+   });
+    next();
+});
 
-
-
-/* DEFINING CONSTRAINTS */
 const PORT = process.env.PORT || 8080;
 const mongoUri = process.env.MONGODB_URI
 console.log(mongoUri)
@@ -91,11 +100,5 @@ app.post('/login/user', async(req,res)=>{
         error = 1
         res.redirect('http://localhost:8081/login')
     }
-})
-
-app.get('/login/user',async(req,res) =>{
-    res.json(error)
-})
-
-
-server.listen(PORT) ;
+});
+app.listen(PORT) ;
