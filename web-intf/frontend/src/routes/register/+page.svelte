@@ -209,9 +209,9 @@
 
     #invalid{
         position: relative;
-        top: 6vh;
+        top: 3.5vh;
         text-align: center;
-        left: 20vh;
+        left: 12vh;
         font-size: 20px;
     }
 </style>
