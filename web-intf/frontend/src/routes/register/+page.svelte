@@ -1,10 +1,12 @@
 <script>
     import { ProgressBar } from "@skeletonlabs/skeleton";
+    import { redirect } from "@sveltejs/kit";
     let strength = 0;
     let validations = [];
     let submit;
     let username;
     let password = "";
+    let invalid = ""
     $: passwordStrengthBar = {
         value: 0,
         max: 3,
@@ -29,16 +31,36 @@
         }
     }
 
+    async function postUserData(){
+        const user = {username: username, password: password}
+        console.log(user)
+       await fetch("http://localhost:8080/register", {
+            method: "POST", // *GET, POST, PUT, DELETE, etc.
+            headers: {
+            "Content-Type": "application/json",
+            },
+            body: JSON.stringify(user), // body data type must match "Content-Type" header
+        }).then(async (res) => {
+            if(res.status == 200) {
+                // handle with a message box along with a link to redirect to login page?
+            }else if(res.status == 400){
+                res = await res.json()
+                invalid.innerText = res['error']
+                invalid.style.color = "red"
+            }
+        }).catch(err => {
+            // also a modal to tell user the error
+            console.log(err)
+        });
+
+    }
 
 </script>
 
 <main>
-    <form
-        id="registerForm"
-        method="post"
-        action="http://localhost:8080/register/user"
-    >
+    <form id="registerForm" on:submit|preventDefault={postUserData}>
         <h1 id="register">Register</h1>
+        <span id="invalid" bind:this={invalid}></span>
         <div class="inputField">
             <input
                 type="text"
@@ -186,5 +208,13 @@
         display: flex;
         height: 20px;
         width: 100%;
+    }
+
+    #invalid{
+        position: relative;
+        top: 6vh;
+        text-align: center;
+        left: 20vh;
+        font-size: 20px;
     }
 </style>

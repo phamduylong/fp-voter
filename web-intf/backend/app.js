@@ -1,21 +1,25 @@
 const express = require('express');
 const app = express();
 const path = require('path');
-const mqtt = require('mqtt');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const http = require('http');
 const server = http.createServer(app);
 const cors = require('cors')
-
+const mongoose = require('mongoose')
+const { MongoClient, ServerApiVersion } = require('mongodb');
+const dotenv = require('dotenv')
+const Canidate = require('./models/canidate')
+const User = require('./models/user')
 
 /* MIDDLEWARES */
 
 app.use(bodyParser.urlencoded({extended: true}));
+app.use(bodyParser.json());
 app.use(cookieParser());
 app.use(cors())
-//app.set('view engine', 'ejs');
-//app.set('views', path.join(__dirname, 'views'));
+dotenv.config()
+
 
 
 
@@ -23,19 +27,58 @@ app.use(cors())
 
 /* DEFINING CONSTRAINTS */
 const PORT = process.env.PORT || 8080;
-let username, password = ""
-let error = 0
+const mongoUri = process.env.MONGODB_URI
+console.log(mongoUri)
+async function connectToDB() {
+    await mongoose.connect(mongoUri)
+    .catch((error) => {
+        console.log(error)
+    });
+    
+  }
+connectToDB();
 
 
 //Rendering to the login page
 
+/*
+app.post('/register', async(req, res) => {
+    const username = req.body.username;
+    const password = req.body.password;
+    const criteria = {username: username};
+    console.log(username)
+    try {
+        const userExist = await countUsersWithCriteria(criteria) > 0;
+        if (!userExist) {               
+            const userSaved = addNewUser(username, password, false);
+            if (userSaved) return res.status(200).send({message: "User saved successfully"});
+            else return res.status(500).send({error: "Error saving user"});
+        } else {
+            return res.status(400).send({error: "User already exists"});
+        }
+    } catch (error) {
+        return res.status(500).send({error: error});
+    }
+});
+*/
 
-app.post('/register/user', async(req,res)=>{
-    error = 0
+app.post('/register', async(req,res)=>{
     username = req.body.username
     password = req.body.password
-    console.log(username,password)
-    res.redirect('http://localhost:8081/login')
+    const criteria = {username: username};
+    console.log(username)
+   try {
+        const user = await User.find({username: username})
+        if (!user) {               
+            const userSaved = addNewUser(username, password, false);
+            if (userSaved) return res.status(200).send({message: "User saved successfully!"});
+            else return res.status(500).send({error: "Error: Error saving user!"});
+        } else {
+            return res.status(400).send({error: "Error: User already exists!"});
+        }
+    } catch (error) {
+        return res.status(500).send({error: error});
+    }
 })
 
 app.post('/login/user', async(req,res)=>{
