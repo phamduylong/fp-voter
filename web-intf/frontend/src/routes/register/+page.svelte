@@ -30,27 +30,6 @@
             submit.style = "border: 3px solid orangered;";
         }
     }
-    
-    async function postUserData() {
-        console.log(username, password);
-        const user = {username: username, password: password};
-        fetch("http://localhost:8080/register", {
-            method: "POST",
-            referrerPolicy: "no-referrer", 
-            mode: "cors",
-            headers: {
-                "Content-Type": "application/json",
-                "Access-Control-Allow-Origin": "*",
-            },
-            body: JSON.stringify(user), 
-        }).then((res) => {
-            if(res.status == 200) {
-                // handle with a message box along with a link to redirect to login page?
-            }
-        }).catch(err => {
-            // also a modal to tell user the error
-        });
-    }
 
     async function postUserData(){
         const user = {username: username, password: password}
@@ -65,6 +44,10 @@
             if(res.status == 200) {
                 // handle with a message box along with a link to redirect to login page?
             }else if(res.status == 400){
+                res = await res.json()
+                invalid.innerText = res['error']
+                invalid.style.color = "red"
+            }else if(res.status == 500){
                 res = await res.json()
                 invalid.innerText = res['error']
                 invalid.style.color = "red"
