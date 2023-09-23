@@ -7,7 +7,6 @@
 
     async function postUserData(){
         const user = {username: username, password: password}
-        console.log(user)
        await fetch("http://localhost:8080/login", {
             method: "POST", // *GET, POST, PUT, DELETE, etc.
             headers: {
@@ -15,20 +14,15 @@
             },
             body: JSON.stringify(user), // body data type must match "Content-Type" header
         }).then(async (res) => {
-            console.log(res.status)
             if(res.status == 200) {
-                // handle with a message box along with a link to redirect to login page?
-                console.log(res.status)
                 goto('/home')
             }else if(res.status == 400){
-                res = await res.json()
-                invalid.innerText = res['error']
-                invalid.style.color = "red"
+                invalidWarning.innerText = res['error']
+                invalidWarning.style.color = "red"
             }else if(res.status == 500){
                 res = await res.json()
-                console.log(res)
-                invalid.innerText = res['error']
-                invalid.style.color = "red"
+                invalidWarning.innerText = res['error']
+                invalidWarning.style.color = "red"
             }
         }).catch(err => {
             // also a modal to tell user the error
@@ -44,8 +38,8 @@
 
 <main>
     <form id="loginForm" on:submit|preventDefault={postUserData}>
-        <h1 id="login">Login</h1>
-        <span id="invalid" bind:this={invalid}></span>
+        <h1 id="loginHeader">Login</h1>
+        <span id="invalidWarning" bind:this={invalid}></span>
         <div class="inputField">
             <input
                 type="text"
@@ -116,7 +110,7 @@
         margin-top: 20px;
     }
 
-    #login {
+    #loginHeader {
         left: 40%;
         position: absolute;
         text-align: center;
@@ -181,7 +175,7 @@
         transform: scale(0.8) translateY(-5rem);
         opacity: 1;
     }
-    #invalid{
+    #invalidWarning{
         position: relative;
         top: 3.5vh;
         text-align: center;
