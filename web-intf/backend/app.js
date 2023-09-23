@@ -1,16 +1,12 @@
 const express = require('express');
 const app = express();
-const path = require('path');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
-const http = require('http');
-const server = http.createServer(app);
 const cors = require('cors')
 const mongoose = require('mongoose')
-const { MongoClient, ServerApiVersion } = require('mongodb');
 const dotenv = require('dotenv')
-const Candidate = require('./models/candidate')
-const User = require('./models/user')
+//const Candidate = require('./models/candidate')
+//const User = require('./models/user')
 const routes = require("./routes/routes");
 const compression = require("compression");
 
@@ -51,7 +47,6 @@ async function connectToDB() {
 connectToDB();
 
 
-//Rendering to the login page
 
 
 app.listen(PORT) ;

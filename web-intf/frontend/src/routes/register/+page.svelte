@@ -1,4 +1,5 @@
 <script>
+    import { goto } from "$app/navigation";
     import { ProgressBar } from "@skeletonlabs/skeleton";
     import { redirect } from "@sveltejs/kit";
     let strength = 0;
@@ -41,14 +42,17 @@
             },
             body: JSON.stringify(user), // body data type must match "Content-Type" header
         }).then(async (res) => {
+            console.log(res.status)
             if(res.status == 200) {
                 // handle with a message box along with a link to redirect to login page?
+                goto('/login')
             }else if(res.status == 400){
                 res = await res.json()
                 invalid.innerText = res['error']
                 invalid.style.color = "red"
             }else if(res.status == 500){
                 res = await res.json()
+                console.log(res)
                 invalid.innerText = res['error']
                 invalid.style.color = "red"
             }

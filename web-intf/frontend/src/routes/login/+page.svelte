@@ -1,33 +1,49 @@
 <script>
-    import { onMount } from "svelte";
-
+    import { goto } from "$app/navigation";
     let submit;
     let username;
     let password = "";
-    let errCode = 0 
     let invalid
 
+    async function postUserData(){
+        const user = {username: username, password: password}
+        console.log(user)
+       await fetch("http://localhost:8080/login", {
+            method: "POST", // *GET, POST, PUT, DELETE, etc.
+            headers: {
+            "Content-Type": "application/json",
+            },
+            body: JSON.stringify(user), // body data type must match "Content-Type" header
+        }).then(async (res) => {
+            console.log(res.status)
+            if(res.status == 200) {
+                // handle with a message box along with a link to redirect to login page?
+                console.log(res.status)
+                goto('/home')
+            }else if(res.status == 400){
+                res = await res.json()
+                invalid.innerText = res['error']
+                invalid.style.color = "red"
+            }else if(res.status == 500){
+                res = await res.json()
+                console.log(res)
+                invalid.innerText = res['error']
+                invalid.style.color = "red"
+            }
+        }).catch(err => {
+            // also a modal to tell user the error
+            console.log(err)
+        });
+
+    }
 
 
-onMount(async function () {
-  const response = await fetch("http://localhost:8080/login/user");
-  errCode = await response.json();
-  console.log(errCode);
-  if(errCode == 1){
-    invalid.innerText = "Error! Username Or Password Incorrect"
-    invalid.style.color = "red"
-  }
-});
 
 
 </script>
 
 <main>
-    <form
-        id="loginForm"
-        method="post"
-        action="http://localhost:8080/login/user"
-    >
+    <form id="loginForm" on:submit|preventDefault={postUserData}>
         <h1 id="login">Login</h1>
         <span id="invalid" bind:this={invalid}></span>
         <div class="inputField">
@@ -165,14 +181,13 @@ onMount(async function () {
         transform: scale(0.8) translateY(-5rem);
         opacity: 1;
     }
-
     #invalid{
         position: relative;
-        top: 4vh;
+        top: 3.5vh;
         text-align: center;
-        left: 8vh;
+        left: 12vh;
+        font-size: 20px;
     }
-
     #createAccountLink{
         position: relative;
         left: 7vh; 

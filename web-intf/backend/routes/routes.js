@@ -1,37 +1,59 @@
 const express = require("express");
 const router = express.Router();
-const Candidate = require('../models/candidate')
+//const Candidate = require('../models/candidate')
 const User = require('../models/user')
+//const mongoose = require('mongoose')
+const bcrypt = require("bcrypt")
 
-//Rendering to the login page
+router.post('/register', async (req, res) => {
+    let username = req.body.username
+    let password = req.body.password
+    console.log(username);
 
-router.post('/register', async(req,res)=>{
-    username = req.body.username
-    password = req.body.password
-    console.log(username)
-   try {
-        const user = await User.find({username: username})
-        if (!user) {               
-            const userSaved = addNewUser(username, password, false);
-            if (userSaved) return res.status(200).send({message: "User saved successfully!"});
-            else return res.status(500).send({error: "Error: Error saving user!"});
+    try {
+        const user = await User.find({ username: username })
+        if (user.length == 0) {
+            const newUser = new User({ username: username, password: password, id: 0, fingerPrint: "", canidateVoteFor: [], isAdmin: false });
+            let userSaved = await newUser.save();
+            if (userSaved != {}) {
+                res.status(200).send({ message: "User saved successfully!" });
+            }
+            else {
+                return res.status(500).send({ error: "Error: Error saving user!" });
+            }
         } else {
-            return res.status(400).send({error: "Error: User already exists!"});
+            return res.status(400).send({ error: "Error: User already exists!" });
         }
     } catch (error) {
-        return res.status(500).send({error: error});
+        console.log(error);
+        return res.status(500).send({ error: "Error" });
     }
 })
 
-router.post('/login/user', async(req,res)=>{
-    let loginName = req.body.username
-    let loginPassword = req.body.password
-    if(loginName == username && loginPassword == password){
-        res.redirect('http://localhost:8081/home')
-        error = 0
-    }else{
-        error = 1
-        res.redirect('http://localhost:8081/login')
+router.post('/login', async (req, res) => {
+    let username = req.body.username;
+    let password = req.body.password;
+    console.log(username);
+
+    try {
+        const user = await User.find({ username: username })
+        if (user.length == 1) {
+            const match = await bcrypt.compare(password,user[0].password);
+            if(match){
+                console.log(match)
+                res.status(200).send()
+            }else{
+                return res.status(400).send({error: "Error: Incorrect Password!"})
+            }
+        }
+        else if (user.length > 1) {
+            return res.status(500).send({ error: "Error: Error logining user!" })
+        } else if (user.length == 0) {
+            return res.status(400).send({ error: "Error: User Not Found!" })
+        }
+    } catch (error) {
+        console.log(error)
+        return res.status(500).send({ error: error });
     }
 });
 
