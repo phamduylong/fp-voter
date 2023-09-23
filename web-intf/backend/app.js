@@ -2,11 +2,9 @@ const express = require('express');
 const app = express();
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
-const cors = require('cors')
-const mongoose = require('mongoose')
-const dotenv = require('dotenv')
-//const Candidate = require('./models/candidate')
-//const User = require('./models/user')
+const cors = require('cors');
+const mongoose = require('mongoose');
+const dotenv = require('dotenv');
 const routes = require("./routes/routes");
 const compression = require("compression");
 
@@ -16,14 +14,13 @@ app.use(compression());
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());
 app.use(cookieParser());
-app.use(cors())
-dotenv.config()
+app.use(cors());
 
 
 /* MIDDLEWARES */
-dotenv.config()
+dotenv.config();
 app.use(bodyParser.json());
-
+const mongoUri = process.env.MONGODB_URI;
 app.all('*', function (req, res, next) {
     res.set({
         "Connection": "Keep-Alive",
@@ -35,18 +32,17 @@ app.all('*', function (req, res, next) {
 });
 app.use("/", routes);
 const PORT = process.env.PORT || 8080;
-const mongoUri = process.env.MONGODB_URI
-console.log(mongoUri)
+
 async function connectToDB() {
-    await mongoose.connect(mongoUri)
-    .catch((error) => {
-        console.log(error)
-    });
-    
-  }
+  mongoose.connect(mongoUri)
+  .then(() => {
+    console.info("Connected To Database!");
+  })
+  .catch((error) => {
+    console.error(error);
+  });
+  
+}
 connectToDB();
 
-
-
-
-app.listen(PORT) ;
+app.listen(PORT);
