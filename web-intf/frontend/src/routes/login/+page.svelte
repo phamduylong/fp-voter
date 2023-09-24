@@ -14,15 +14,16 @@
             },
             body: JSON.stringify(user), // body data type must match "Content-Type" header
         }).then(async (res) => {
-            if(res.status == 200) {
-                goto('/home')
-            }else if(res.status == 400){
-                invalidWarning.innerText = res['error']
-                invalidWarning.style.color = "red"
-            }else if(res.status == 500){
-                res = await res.json()
-                invalidWarning.innerText = res['error']
-                invalidWarning.style.color = "red"
+            if(res.status === 200) {
+                goto('/home');
+            }else if(res.status === 401){
+                res = await res.json();
+                invalidWarning.innerText = res['error'];
+                invalidWarning.style.color = "red";
+            }else if(res.status === 500){
+                res = await res.json();
+                invalidWarning.innerText = res['error'];
+                invalidWarning.style.color = "red";
             }
         }).catch(err => {
             // also a modal to tell user the error
