@@ -15,7 +15,6 @@
             body: JSON.stringify(user), // body data type must match "Content-Type" header
         }).then(async (res) => {
             if(res.status === 200) {
-                console.log(res)
                 res = await res.json();
                 localStorage.setItem('jwt', res.token);
                 goto('/home');

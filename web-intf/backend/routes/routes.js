@@ -38,14 +38,14 @@ router.post('/login', async (req, res) => {
     try {
         const user = await User.find({ username: username })
         if (user.length === 1) {
-            const match = await bcrypt.compare(password,user[0].password);
-            if(match){
+            const match = await bcrypt.compare(password, user[0].password);
+            if (match) {
                 const salt = await bcrypt.genSalt(10);
                 const webTokenKey = await bcrypt.hash(password, salt);
-                const token = jwt.sign({ _username: username }, webTokenKey, { expiresIn: '1h' });
-                res.status(200).send(({token: token}));
-            }else{
-                return res.status(401).send({error: "Error: Incorrect Password!"});
+                const token = jwt.sign({ user: username }, webTokenKey, { expiresIn: '1h' });
+                res.status(200).send(({ token: token }));
+            } else {
+                return res.status(401).send({ error: "Error: Incorrect Password!" });
             }
         }
         else if (user.length > 1) {
