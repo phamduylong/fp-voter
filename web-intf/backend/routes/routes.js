@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const User = require('../models/User');
 const bcrypt = require("bcrypt");
+const jwt = require('jsonwebtoken');
 
 router.post('/register', async (req, res) => {
     const username = req.body.username;
@@ -33,14 +34,18 @@ router.post('/login', async (req, res) => {
     const username = req.body.username;
     const password = req.body.password;
 
+
     try {
         const user = await User.find({ username: username })
         if (user.length === 1) {
             const match = await bcrypt.compare(password,user[0].password);
             if(match){
-                res.status(200).send({ message: "Login successful!" });
+                const salt = await bcrypt.genSalt(10);
+                const webTokenKey = await bcrypt.hash(password, salt);
+                const token = jwt.sign({ _username: username }, webTokenKey, { expiresIn: '1h' });
+                res.status(200).send(({token: token}));
             }else{
-                return res.status(400).send({error: "Error: Incorrect Password!"})
+                return res.status(401).send({error: "Error: Incorrect Password!"});
             }
         }
         else if (user.length > 1) {
@@ -52,6 +57,7 @@ router.post('/login', async (req, res) => {
         return res.status(500).send({ error: "Error: Unable To Login!" });
     }
 });
+
 
 //Put route to change user password
 module.exports = router;

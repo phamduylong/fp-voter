@@ -8,6 +8,7 @@ const dotenv = require('dotenv');
 const routes = require("./routes/routes");
 const compression = require("compression");
 
+
 /* MIDDLEWARES */
 
 app.use(compression()); 

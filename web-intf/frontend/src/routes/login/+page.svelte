@@ -15,7 +15,15 @@
             body: JSON.stringify(user), // body data type must match "Content-Type" header
         }).then(async (res) => {
             if(res.status === 200) {
+                console.log(res)
+                res = await res.json();
+                localStorage.setItem('jwt', res.token);
                 goto('/home');
+            }
+            else if(res.status === 400){
+                res = await res.json();
+                invalidWarning.innerText = res['error'];
+                invalidWarning.style.color = "red";
             }else if(res.status === 401){
                 res = await res.json();
                 invalidWarning.innerText = res['error'];
@@ -27,7 +35,7 @@
             }
         }).catch(err => {
             // also a modal to tell user the error
-            console.log(err)
+            console.error(err);
         });
 
     }
