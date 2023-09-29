@@ -4,7 +4,7 @@ const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
 const mongoose = require('mongoose');
-const dotenv = require('dotenv');
+
 const routes = require("./routes/routes");
 const compression = require("compression");
 
@@ -19,7 +19,7 @@ app.use(cors());
 
 
 /* MIDDLEWARES */
-dotenv.config();
+
 app.use(bodyParser.json());
 const mongoUri = process.env.MONGODB_URI;
 app.all('*', function (req, res, next) {

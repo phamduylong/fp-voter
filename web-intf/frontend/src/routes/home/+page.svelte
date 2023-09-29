@@ -4,10 +4,10 @@
     import { goto } from "$app/navigation";
     import { AppShell } from "@skeletonlabs/skeleton";
     import { AppBar } from "@skeletonlabs/skeleton";
+    import axios from 'axios';
 
     let token =
         typeof window !== "undefined" ? localStorage.getItem("jwt") : null;
-    let intervalId;
 
     function isTokenExpired(token) {
         if (!token) return true;
@@ -20,7 +20,7 @@
         if (isTokenExpired(token)) {
             localStorage.removeItem("jwt");
             token = null;
-            clearInterval(intervalId)
+            clearInterval(intervalId);
             goto("/login");
         }
     }
@@ -32,7 +32,7 @@
     }
 
     onMount(async () => {
-        intervalId = setInterval(handleExpiredToken, 1000);
+        handleExpiredToken();
         if (!token) {
             goto("/login");
         } else {
@@ -40,33 +40,47 @@
             console.log(currentUser);
         }
 
-        return () => {
-            clearInterval(intervalId);
-        };
     });
+
+    async function getCandidates() {
+        await fetch("http://localhost:8080/candidates", {    
+            method: "GET",
+            headers: {
+            "Authorization": `Bearer ${token}`,
+            },
+        })
+            .then(async (res) => {
+                if(res.status == 401){
+                    res = await res.json()
+                    console.error(res)
+                    goto('/login')
+                }
+            })
+            .catch((error) => {
+                console.log("error", error);
+            });
+    }
 </script>
 
 <AppShell>
     <svelte:fragment slot="header">
-        <AppBar>FP Voter <button on:click={handleLogout} id="logoutBtn">Logout</button></AppBar
+        <AppBar
+            >FP Voter <button on:click={handleLogout} id="logoutBtn"
+                >Logout</button
+            ></AppBar
         >
     </svelte:fragment>
     <svelte:fragment slot="sidebarLeft">
-        <div id="sidebar-left" class="hidden lg:block">This should be a sidebar</div>
+        <div id="sidebar-left" class="hidden lg:block">
+            This should be a sidebar
+        </div>
     </svelte:fragment>
-
-    <!-- (sidebarRight) -->
-    <!-- (pageHeader) -->
-    <!-- Router Slot -->
-    <slot />
-
-    <!-- ---- / ---- -->
-    <!-- (pageFooter) -->
-    <!-- (footer) -->
+    <button on:click={getCandidates} id="getCandidateBtn">Get Candidates</button
+    >
 </AppShell>
 
 <style>
-    #logoutBtn{
+    #logoutBtn {
         left: 1450%;
         position: relative;
     }

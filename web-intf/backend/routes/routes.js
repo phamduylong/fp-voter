@@ -3,6 +3,34 @@ const router = express.Router();
 const User = require('../models/User');
 const bcrypt = require("bcrypt");
 const jwt = require('jsonwebtoken');
+const dotenv = require('dotenv');
+dotenv.config();
+const JWT_KEY = process.env.JWT_SECRET;
+
+const checkJwtExpiration = (req, res, next) => {
+    const token = req.headers.authorization?.split(' ')[1];
+  
+    if (token) {
+      try {
+        const decodedToken = jwt.verify(token, JWT_KEY);
+  
+        if (decodedToken.exp * 1000 < Date.now()) {
+          // Token has expired, send a 401 Unauthorized response
+          return res.status(401).json({ message: 'Token has expired' });
+        }
+  
+        // Token is still valid, continue with the request
+        req.user = decodedToken;
+        next();
+      } catch (err) {
+        return res.status(401).json({ message: 'Invalid token' });
+      }
+    } else {
+      return res.status(401).json({ message: 'Token not provided' });
+    }
+  };
+  
+
 
 router.post('/register', async (req, res) => {
     const username = req.body.username;
@@ -30,6 +58,7 @@ router.post('/register', async (req, res) => {
     }
 })
 
+
 router.post('/login', async (req, res) => {
     const username = req.body.username;
     const password = req.body.password;
@@ -41,8 +70,7 @@ router.post('/login', async (req, res) => {
             const match = await bcrypt.compare(password, user[0].password);
             if (match) {
                 const salt = await bcrypt.genSalt(10);
-                const webTokenKey = await bcrypt.hash(password, salt);
-                const token = jwt.sign({ user: username }, webTokenKey, { expiresIn: '1h' });
+                const token = jwt.sign({ user: username },JWT_KEY , { expiresIn: '10s' });
                 res.status(200).send(({ token: token }));
             } else {
                 return res.status(401).send({ error: "Error: Incorrect Password!" });
@@ -58,6 +86,9 @@ router.post('/login', async (req, res) => {
     }
 });
 
+router.get('/candidates', checkJwtExpiration, async (req, res) => {
+    res.json({message: "You should not see this message!"});
+});
 
 //Put route to change user password
 module.exports = router;
