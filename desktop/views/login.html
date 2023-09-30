@@ -7,7 +7,8 @@
     <script src="../node_modules/xel/xel.js" type="module"></script>
     <meta charset="UTF-8">
     <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'">
+    <!-- Needs to be fixed after deploying the server to a real domain -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' http://localhost:8080; style-src 'self' 'unsafe-inline' http://localhost:8080; connect-src 'self' http://localhost:8080;">
     <link href="../styles/login.css" rel="stylesheet">
     <link href="../styles/dialog.css" rel="stylesheet">
     <title>Fingerprint Voter - Login</title>
