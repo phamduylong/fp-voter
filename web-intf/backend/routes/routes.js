@@ -69,8 +69,7 @@ router.post('/login', async (req, res) => {
         if (user.length === 1) {
             const match = await bcrypt.compare(password, user[0].password);
             if (match) {
-                const salt = await bcrypt.genSalt(10);
-                const token = jwt.sign({ user: username },JWT_KEY , { expiresIn: '10s' });
+                const token = jwt.sign({ user: username }, JWT_KEY ,{ expiresIn: '10s' });
                 res.status(200).send(({ token: token }));
             } else {
                 return res.status(401).send({ error: "Error: Incorrect Password!" });
@@ -84,6 +83,10 @@ router.post('/login', async (req, res) => {
     } catch (error) {
         return res.status(500).send({ error: "Error: Unable To Login!" });
     }
+});
+
+router.post('/logout',checkJwtExpiration, async (req, res) => {
+    res.json({message: "You are successfully logged out!"})
 });
 
 router.get('/candidates', checkJwtExpiration, async (req, res) => {

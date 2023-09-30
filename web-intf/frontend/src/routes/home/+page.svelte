@@ -4,8 +4,7 @@
     import { goto } from "$app/navigation";
     import { AppShell } from "@skeletonlabs/skeleton";
     import { AppBar } from "@skeletonlabs/skeleton";
-    import axios from 'axios';
-
+    
     let token =
         typeof window !== "undefined" ? localStorage.getItem("jwt") : null;
 
@@ -25,10 +24,27 @@
         }
     }
 
-    function handleLogout() {
-        localStorage.removeItem("jwt");
-        token = null;
-        goto("/login");
+    async function handleLogout() {
+        await fetch("http://localhost:8080/logout", {
+            method: "POST", // *GET, POST, PUT, DELETE, etc.
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+            },
+        })
+            .then(async (res) => {
+                if (res.status === 200) {
+                    localStorage.removeItem("jwt");
+                    token = null;
+                    goto("/login");
+                } else if (res.status === 401 || res.status === 500) {
+                    goto("/login");
+                }
+            })
+            .catch((err) => {
+                // also a modal to tell user the error
+                console.error(err);
+            });
     }
 
     onMount(async () => {
@@ -39,21 +55,20 @@
             const currentUser = jwt_decode(token);
             console.log(currentUser);
         }
-
     });
 
     async function getCandidates() {
-        await fetch("http://localhost:8080/candidates", {    
+        await fetch("http://localhost:8080/candidates", {
             method: "GET",
             headers: {
-            "Authorization": `Bearer ${token}`,
+                Authorization: `Bearer ${token}`,
             },
         })
             .then(async (res) => {
-                if(res.status == 401){
-                    res = await res.json()
-                    console.error(res)
-                    goto('/login')
+                if (res.status == 401) {
+                    res = await res.json();
+                    console.error(res);
+                    goto("/login");
                 }
             })
             .catch((error) => {
