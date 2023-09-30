@@ -1,9 +1,10 @@
+
 <script>
     import { goto } from "$app/navigation";
     let submit;
     let username;
     let password = "";
-    let invalid
+    let invalid;
 
     async function postUserData(){
         const user = {username: username, password: password}
@@ -140,7 +141,7 @@
         width: 100%;
         padding: 0.25rem 0;
         background: none;
-        color: black;
+        color: white;
         font-size: 1.2rem;
         /* transition: border 500ms; */
     }

@@ -4,7 +4,7 @@
     import { goto } from "$app/navigation";
     import { AppShell } from "@skeletonlabs/skeleton";
     import { AppBar } from "@skeletonlabs/skeleton";
-    
+
     let token =
         typeof window !== "undefined" ? localStorage.getItem("jwt") : null;
 
@@ -19,7 +19,6 @@
         if (isTokenExpired(token)) {
             localStorage.removeItem("jwt");
             token = null;
-            clearInterval(intervalId);
             goto("/login");
         }
     }
@@ -36,6 +35,8 @@
                 if (res.status === 200) {
                     localStorage.removeItem("jwt");
                     token = null;
+                    res = await res.json();
+                    console.info(res.message);
                     goto("/login");
                 } else if (res.status === 401 || res.status === 500) {
                     goto("/login");
@@ -75,28 +76,31 @@
                 console.log("error", error);
             });
     }
+
 </script>
 
-<AppShell>
+<AppShell slotSidebarLeft="bg-surface-500/5 w-0 lg:w-64">
     <svelte:fragment slot="header">
         <AppBar
-            >FP Voter <button on:click={handleLogout} id="logoutBtn"
-                >Logout</button
-            ></AppBar
+            ><strong class="text-xl uppercase">FP Voter</strong>
+
+                </AppBar
         >
     </svelte:fragment>
+
     <svelte:fragment slot="sidebarLeft">
-        <div id="sidebar-left" class="hidden lg:block">
-            This should be a sidebar
-        </div>
+        <nav class="list-nav">
+            <ul>
+                <li><a href="/home">Home</a></li>
+                <li><a href="/vote">Vote</a></li>
+                <li><a href="/home" on:click={getCandidates}>Get Candidates</a></li>
+                <li><a href="/" on:click={handleLogout}>Logout</a></li>
+            </ul>
+        </nav>
     </svelte:fragment>
-    <button on:click={getCandidates} id="getCandidateBtn">Get Candidates</button
-    >
+
 </AppShell>
 
 <style>
-    #logoutBtn {
-        left: 1450%;
-        position: relative;
-    }
+
 </style>
