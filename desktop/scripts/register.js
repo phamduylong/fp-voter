@@ -1,12 +1,19 @@
 window.addEventListener("load", () => {
     const registerBtn = document.getElementById("register-submit-btn");
     const dialog = document.querySelector("#register-dialog");
-    const errElem = document.querySelector("#err-msg");
+    const errMsg = document.querySelector("#err-msg");
     const dialogAgreeBtn = document.querySelector("#dialog-agree-button");
-    dialogAgreeBtn.addEventListener("click", () => {
-        dialog.close();
+    dialogAgreeBtn.addEventListener("click", async () => {
+        errMsg.innerHTML = "";
+        await dialog.close();
     });
 
+/**
+  * Validate user inputs. Errors will be handled with a dialog.
+  * @param {string} username 
+  * @param {string} password 
+  * @throws {Error} if inputs are malformed
+  */
     const validateCredentials = (username, password) => {
     if (username === null || username === undefined || username.length === 0) {
         throw new Error("Username is missing!");
@@ -39,14 +46,71 @@ window.addEventListener("load", () => {
     }
  }
 
+ /**
+  * Make a request to server to register a new user. Errors will be handled with a dialog.
+  * @param {string} username 
+  * @param {string} password 
+  * @throws {Error} if inputs are invalid/server sends an error through
+  * @summary Attempts to register a new user.
+  */
+ const attemptRegister = async (username, password) => {
+    fetch("http://localhost:8080/register", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "referrer-policy": "no-referrer",
+            "Access-Control-Allow-Origin": "*"
+        },
+        body: JSON.stringify({ username: username, password: password })
+    }).then(async (res) => {
+        const resBody = await res.json();
+    
+        switch(res.status) {
+            case 200:
+                window.location.href = "./login.html";
+                break;
+            case 400:
+                if (resBody.error) throw new Error(resBody.error);
+                else throw new Error("User already exists!");
+            case 500:
+                if (resBody.error) throw new Error(resBody.error);
+                else throw new Error("Internal Server Error!");
+        }
+    }).catch(async (err) => {
+        console.log(err);
+        // prevent dialog spamming and empty dialogs
+        if (errMsg.innerHTML !== err.message && err.message && err.message !== "") {
+            errMsg.innerHTML = err.message;
+            await dialog.showModal();
+        }
+        
+    });
+ }
+
+    window.onkeydown = (e) => {
+        if (e.key === "Enter") {
+            registerBtn.click();
+        }
+    }
+
+/**
+  * Attempt to register a new user. First user inputs are validated, then the request is sent to the server.
+  * @throws {Error} if inputs are invalid/server sends an error through.
+  * @summary Registers a new user.
+  */
     registerBtn.addEventListener("click", () => {
         const username = document.querySelector("#uid").value;
         const password = document.querySelector("#pwd").value;
         try {
             validateCredentials(username, password);
+            attemptRegister(username, password);
         } catch (err) {
-            errElem.innerHTML = err.message;
-            dialog.showModal();
+            if (errMsg.innerHTML !== err.message && err.message && err.message !== "") {
+                errMsg.innerHTML = err.message;
+                dialog.showModal();
+            }
         }
     });
+
+
 })
