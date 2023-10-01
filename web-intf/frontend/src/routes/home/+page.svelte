@@ -35,8 +35,6 @@
                 if (res.status === 200) {
                     localStorage.removeItem("jwt");
                     token = null;
-                    res = await res.json();
-                    console.info(res.message);
                     goto("/login");
                 } else if (res.status === 401 || res.status === 500) {
                     goto("/login");

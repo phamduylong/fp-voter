@@ -76,7 +76,7 @@ router.post('/login', async (req, res) => {
             }
         }
         else if (user.length > 1) {
-            return res.status(500).send({ error: "Error: Multiple Username exists!" });
+            return res.status(500).send({ error: "Error: Username duplicated!" });
         } else if (user.length === 0) {
             return res.status(400).send({ error: "Error: User Not Found!" });
         }
@@ -86,7 +86,7 @@ router.post('/login', async (req, res) => {
 });
 
 router.post('/logout',checkJwtExpiration, async (req, res) => {
-    res.json({message: "You are successfully logged out!"})
+    res.sendStatus(200);
 });
 
 
