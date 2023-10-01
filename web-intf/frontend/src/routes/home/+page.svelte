@@ -1,5 +1,4 @@
 <script>
-    import jwt_decode from "jwt-decode";
     import { onMount } from "svelte";
     import { goto } from "$app/navigation";
     import { AppShell } from "@skeletonlabs/skeleton";
@@ -35,10 +34,8 @@
                 if (res.status === 200) {
                     localStorage.removeItem("jwt");
                     token = null;
-                    goto("/login");
-                } else if (res.status === 401 || res.status === 500) {
-                    goto("/login");
                 }
+                goto("/login");
             })
             .catch((err) => {
                 // also a modal to tell user the error
@@ -51,8 +48,8 @@
         if (!token) {
             goto("/login");
         } else {
-            const currentUser = jwt_decode(token);
-            console.log(currentUser);
+            const decodedToken = JSON.parse(atob(token.split(".")[1]));
+            console.log(decodedToken.user);
         }
     });
 
