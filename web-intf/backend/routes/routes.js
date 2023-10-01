@@ -39,7 +39,7 @@ router.post('/register', async (req, res) => {
     try {
         const user = await User.find({ username: username });
         if (user.length === 0) {
-            const salt = await bcrypt.genSalt(10);
+            const salt = await bcrypt.genSalt();
             password = await bcrypt.hash(password, salt);
             const newUser = new User({ username: username, password: password, isAdmin: false });
             let userSaved = await newUser.save();
