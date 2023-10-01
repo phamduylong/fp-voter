@@ -9,13 +9,13 @@
     <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
     <!-- Needs to be fixed after deploying the server to a real domain -->
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' http://localhost:8080; style-src 'self' 'unsafe-inline' http://localhost:8080; connect-src 'self' http://localhost:8080;">
-    <link href="../styles/login.css" rel="stylesheet">
+    <link href="../styles/register.css" rel="stylesheet">
     <link href="../styles/dialog.css" rel="stylesheet">
-    <title>Fingerprint Voter - Login</title>
+    <title>Fingerprint Voter - Register</title>
   </head>
   <body>
-    <form id="login-panel">
-      <h1>Login</h1>
+    <form id="register-panel">
+      <h1>Register</h1>
       <span class="input-row">
         <x-input type="text" id="uid" required>
           <x-icon href="#person"></x-icon>
@@ -28,10 +28,10 @@
           <x-label>Password</x-label>
         </x-input>
       </span>
-      <span id="login-submit-btn-row">
-        <x-button type="submit" id="login-submit-btn">
+      <span id="register-submit-btn-row">
+        <x-button type="submit" id="register-submit-btn">
           <x-label>Submit</x-label>
-          <dialog id="login-dialog">
+          <dialog id="register-dialog">
             <main>
               <h3 id="error-dialog-title">⛔&nbsp;Error</h3>
               <p id="err-msg"></p>
@@ -45,10 +45,7 @@
           </dialog>
         </x-button>
       </span>
-      <span id="register-anchor-container">
-        <a href="./register.html"><x-label>Not a user yet? Register here</x-label></a>
-      </span>
     </form>
   </body>
-  <script src="../scripts/login.js"></script>
+  <script src="../scripts/register.js"></script>
 </html>
