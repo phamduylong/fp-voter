@@ -19,7 +19,7 @@
         if (isTokenExpired(token)) {
             localStorage.removeItem("jwt");
             token = null;
-            goto("/login");
+            window.location.href = "http://localhost:8081/login"
         }
     }
 
@@ -58,24 +58,6 @@
         }
     });
 
-    async function getCandidates() {
-        await fetch("http://localhost:8080/candidates", {
-            method: "GET",
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        })
-            .then(async (res) => {
-                if (res.status == 401) {
-                    res = await res.json();
-                    console.error(res);
-                    goto("/login");
-                }
-            })
-            .catch((error) => {
-                console.log("error", error);
-            });
-    }
 
 </script>
 
@@ -91,9 +73,8 @@
     <svelte:fragment slot="sidebarLeft">
         <nav class="list-nav">
             <ul>
-                <li><a href="/home">Home</a></li>
-                <li><a href="/vote">Vote</a></li>
-                <li><a href="/home" on:click={getCandidates}>Get Candidates</a></li>
+                <li><a href="/home" on:click={handleExpiredToken}>Home</a></li>
+                <li><a href="/vote" on:click={handleExpiredToken}>Vote</a></li>
                 <li><a href="/" on:click={handleLogout}>Logout</a></li>
             </ul>
         </nav>

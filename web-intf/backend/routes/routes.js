@@ -89,9 +89,7 @@ router.post('/logout',checkJwtExpiration, async (req, res) => {
     res.json({message: "You are successfully logged out!"})
 });
 
-router.get('/candidates', checkJwtExpiration, async (req, res) => {
-    res.json({message: "You should not see this message!"});
-});
+
 
 //Put route to change user password
 module.exports = router;
