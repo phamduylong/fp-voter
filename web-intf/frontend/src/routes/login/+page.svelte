@@ -1,9 +1,9 @@
+
 <script>
     import { goto } from "$app/navigation";
     let submit;
     let username;
     let password = "";
-    let invalid
 
     async function postUserData(){
         const user = {username: username, password: password}
@@ -13,20 +13,30 @@
             "Content-Type": "application/json",
             },
             body: JSON.stringify(user), // body data type must match "Content-Type" header
-        }).then(async (res) => {
-            if(res.status == 200) {
-                goto('/home')
-            }else if(res.status == 400){
-                invalidWarning.innerText = res['error']
-                invalidWarning.style.color = "red"
-            }else if(res.status == 500){
-                res = await res.json()
-                invalidWarning.innerText = res['error']
-                invalidWarning.style.color = "red"
+        }).then(async (res) =>  {
+                const response = await res.json();
+            switch (res.status) {
+                case 200:
+                    localStorage.setItem('jwt', response.token);
+                    goto('/home');
+                    break;
+                case 400:
+                    invalidWarning.innerText = response['error'];
+                    invalidWarning.style.color = "red";
+                    break;
+                case 401:
+                    invalidWarning.innerText = response['error'];
+                    invalidWarning.style.color = "red";
+                    break;
+                case 500:
+                    invalidWarning.innerText = response['error'];
+                    invalidWarning.style.color = "red";
+                    break;
             }
+        
         }).catch(err => {
             // also a modal to tell user the error
-            console.log(err)
+            console.error(err);
         });
 
     }
@@ -39,7 +49,7 @@
 <main>
     <form id="loginForm" on:submit|preventDefault={postUserData}>
         <h1 id="loginHeader">Login</h1>
-        <span id="invalidWarning" bind:this={invalid}></span>
+        <span id="invalidWarning"></span>
         <div class="inputField">
             <input
                 type="text"
@@ -132,7 +142,7 @@
         width: 100%;
         padding: 0.25rem 0;
         background: none;
-        color: black;
+        color: white;
         font-size: 1.2rem;
         /* transition: border 500ms; */
     }
