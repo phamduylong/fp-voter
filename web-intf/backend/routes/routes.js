@@ -53,14 +53,12 @@ router.post('/register', async (req, res) => {
             const newUser = new User({ username: username, password: password, isAdmin: false });
             let userSaved = await newUser.save();
             if (userSaved != {}) {
-                res.status(200).send({ message: "User saved successfully!" });
+                return res.status(200).send({ message: "User saved successfully!" });
             }
-            else {
-                return res.status(500).send({ error: "Unable To Create User!" });
-            }
-        } else {
-            return res.status(400).send({ error: "Error: User already exists!" });
+            return res.status(500).send({ error: "Unable To Create User!" });
         }
+        return res.status(400).send({ error: "Error: User already exists!" });
+
     } catch (error) {
         console.log(error);
         return res.status(500).send({ error: "Unable To Create User!" });
@@ -80,9 +78,8 @@ router.post('/login', async (req, res) => {
             if (match) {
                 const token = jwt.sign({ user: username }, JWT_KEY, { expiresIn: '1hr' });
                 res.status(200).send({ token: token });
-            } else {
+            } 
                 return res.status(401).send({ error: "Error: Incorrect Password!" });
-            }
         }
         else if (user.length > 1) {
             return res.status(500).send({ error: "Error: Username duplicated!" });
@@ -102,9 +99,9 @@ router.post('/logout', checkJwtExpiration, async (req, res) => {
     let tokenSaved = await inactiveToken.save();
     if (tokenSaved != {}) {
         return res.sendStatus(200);
-    } else {
-        return res.sendStatus(401);
-    }
+    } 
+    return res.sendStatus(401);
+
 });
 
 

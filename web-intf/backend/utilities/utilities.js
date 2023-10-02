@@ -15,14 +15,10 @@ async function checkInactiveToken(token) {
     //Check if theres no inactive token
     if (inactiveToken.length === 0) {
         return false;
-    } else {
-        //Check if inactive token already expired
-        if (inactiveToken[0].expiryTime * 1000 < Date.now()) {
-            return false;
-        } else if (inactiveToken[0].expiryTime * 1000 > Date.now()) {
-            return true;
-        }
     }
+    //Check if inactive token already expired
+    return (inactiveToken[0].expiryTime * 1000) < Date.now()
+
 }
 
 module.exports = {checkInactiveToken}
