@@ -1,35 +1,44 @@
 const express = require("express");
 const router = express.Router();
 const User = require('../models/User');
+const JWT = require('../models/JWT');
+const {checkInactiveToken} = require('../utilities/utilities');
 const bcrypt = require("bcrypt");
 const jwt = require('jsonwebtoken');
 const dotenv = require('dotenv');
+
+
 dotenv.config();
 const JWT_KEY = process.env.JWT_SECRET;
 
-const checkJwtExpiration = (req, res, next) => {
+const checkJwtExpiration = async (req, res, next) => {
     const token = req.headers.authorization?.split(' ')[1];
-  
     if (token) {
-      try {
-        const decodedToken = jwt.verify(token, JWT_KEY);
-  
-        if (decodedToken.exp * 1000 < Date.now()) {
-          // Token has expired, send a 401 Unauthorized response
-          return res.status(401).json({ message: 'Token has expired' });
+        try {
+            const decodedToken = jwt.verify(token, JWT_KEY);
+            const matchToken = await checkInactiveToken(token);
+
+            if (matchToken === true) {
+                return res.status(401).json({ message: 'Token is inactive' });
+            }
+            else {
+                if (decodedToken.exp * 1000 < Date.now()) {
+                    // Token has expired, send a 401 Unauthorized response
+                    return res.status(401).json({ message: 'Token has expired' });
+                }
+            }
+
+            // Token is still valid, continue with the request
+            req.user = decodedToken;
+            next();
+        } catch (err) {
+            return res.status(401).json({ message: 'Invalid token' });
         }
-  
-        // Token is still valid, continue with the request
-        req.user = decodedToken;
-        next();
-      } catch (err) {
-        return res.status(401).json({ message: 'Invalid token' });
-      }
     } else {
-      return res.status(401).json({ message: 'Token not provided' });
+        return res.status(401).json({ message: 'Token not provided' });
     }
-  };
-  
+};
+
 
 
 router.post('/register', async (req, res) => {
@@ -69,7 +78,7 @@ router.post('/login', async (req, res) => {
         if (user.length === 1) {
             const match = await bcrypt.compare(password, user[0].password);
             if (match) {
-                const token = jwt.sign({ user: username }, JWT_KEY ,{ expiresIn: '1hr' });
+                const token = jwt.sign({ user: username }, JWT_KEY, { expiresIn: '1hr' });
                 res.status(200).send({ token: token });
             } else {
                 return res.status(401).send({ error: "Error: Incorrect Password!" });
@@ -85,8 +94,17 @@ router.post('/login', async (req, res) => {
     }
 });
 
-router.post('/logout',checkJwtExpiration, async (req, res) => {
-    res.sendStatus(200);
+router.post('/logout', checkJwtExpiration, async (req, res) => {
+    const token = req.headers.authorization?.split(' ')[1];
+    const decodedToken = JSON.parse(atob(token.split(".")[1]));
+    const expiryTime = decodedToken.exp;
+    const inactiveToken = new JWT({ token: token, expiryTime: expiryTime });
+    let tokenSaved = await inactiveToken.save();
+    if (tokenSaved != {}) {
+        return res.sendStatus(200);
+    } else {
+        return res.sendStatus(401);
+    }
 });
 
 

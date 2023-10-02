@@ -14,7 +14,7 @@
             },
             body: JSON.stringify(user), // body data type must match "Content-Type" header
         }).then(async (res) =>  {
-                let response = await res.json();
+                const response = await res.json();
             switch (res.status) {
                 case 200:
                     localStorage.setItem('jwt', response.token);
