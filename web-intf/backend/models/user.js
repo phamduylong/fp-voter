@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-const bcrypt = require("bcrypt")
 const Schema = mongoose.Schema;
 const Counter = require("./Counter");
 
@@ -7,9 +6,10 @@ const userSchema = new Schema({
   username: { type: String, required: true },
   password: { type: String, required: true },
   id: { type: Number, required: true, default: -1 },
-  fingerPrint: { type: String, required: false, default: ""},
-  candidateVotedId: {type: Number, required: false, default: null},
-  isAdmin: { type: Boolean, required: true},
+  fingerprintId: { type: Number, required: false, max: 162, default: -1 },
+  sensorId: { type: Number, required: false, default: -1 },
+  candidateVotedId: { type: Number, required: false, default: null },
+  isAdmin: { type: Boolean, required: true },
 });
 
 userSchema.pre("save", function(next) {
@@ -23,15 +23,5 @@ userSchema.pre("save", function(next) {
   })
 });
 
-userSchema.pre("save", async function(next) {
-    if (!this.isModified("password")) return next();
-    try {
-      const salt = await bcrypt.genSalt(10);
-      this.password = await bcrypt.hash(this.password, salt);
-      return next();
-    } catch (error) {
-      return next(error);
-    }
-  });
 
 module.exports = mongoose.model("User", userSchema);

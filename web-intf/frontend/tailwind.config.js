@@ -16,7 +16,7 @@ module.exports = {
 	},
 	plugins: [
 		skeleton({
-      themes: { preset: [ "skeleton" ] }
-    })
+			themes: { preset: [ "skeleton", "wintry", "modern" ] }
+		})
 	]
 }
