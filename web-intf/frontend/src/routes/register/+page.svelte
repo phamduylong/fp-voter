@@ -162,7 +162,7 @@
         width: 100%;
         padding: 0.25rem 0;
         background: none;
-        color: black;
+        color: white;
         font-size: 1.2rem;
     }
 
