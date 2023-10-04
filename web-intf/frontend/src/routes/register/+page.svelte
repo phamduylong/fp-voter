@@ -1,7 +1,6 @@
 <script>
     import { goto } from "$app/navigation";
     import { ProgressBar } from "@skeletonlabs/skeleton";
-    import { redirect } from "@sveltejs/kit";
     let strength = 0;
     let validations = [];
     let submit;
@@ -23,7 +22,7 @@
         strength = validations.reduce((acc, cur) => acc + cur);
         passwordStrengthBar.value = strength;
 
-        if (strength == 3 && username != "" && username != undefined) {
+        if (strength === 3 && username !== "" && username !== undefined) {
             submit.disabled = false;
             submit.style = "border: 3px solid #73AD21;";
         } else {
@@ -34,6 +33,7 @@
 
     async function postUserData(){
         const user = {username: username, password: password}
+        const invalidWarning = document.getElementById("invalidWarning")
        await fetch("http://localhost:8080/register", {
             method: "POST", // *GET, POST, PUT, DELETE, etc.
             headers: {
@@ -41,14 +41,14 @@
             },
             body: JSON.stringify(user), // body data type must match "Content-Type" header
         }).then(async (res) => {
-            if(res.status == 200) {
+            if(res.status === 200) {
                 // handle with a message box along with a link to redirect to login page?
-                goto('/login')
-            }else if(res.status == 400){
+                await goto('/login')
+            }else if(res.status === 400){
                 res = await res.json()
                 invalidWarning.innerText = res['error']
                 invalidWarning.style.color = "red"
-            }else if(res.status == 500){
+            }else if(res.status === 500){
                 res = await res.json()
                 invalidWarning.innerText = res['error']
                 invalidWarning.style.color = "red"
@@ -75,7 +75,7 @@
                 on:input={validatePassword}
                 required
             />
-            <label for="username" class="label">Username</label>
+            <label id="username" class="label">Username</label>
         </div>
 
         <div class="inputField">
@@ -86,12 +86,11 @@
                 bind:value={password}
                 on:input={validatePassword}
             />
-            <label for="password" class="label">Password</label>
+            <label id="password" class="label">Password</label>
         </div>
-        <button
+        <button disabled
             type="submit"
             id="submit"
-            disabled={true}
             bind:this={submit}
             style="border: 3px solid orangered;">Create Account!</button
         >
@@ -174,7 +173,7 @@
         width: 100%;
         background: black;
         transform: scaleX(0);
-        transform-origin: 0%;
+        transform-origin: 0;
         transition: transform 500ms ease;
         top: 2px;
     }
@@ -192,7 +191,7 @@
         z-index: -1;
         position: absolute;
         transform: translateY(-2rem);
-        transform-origin: 0%;
+        transform-origin: 0;
         transition: transform 400ms;
     }
 

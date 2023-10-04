@@ -15,10 +15,11 @@
             body: JSON.stringify(user), // body data type must match "Content-Type" header
         }).then(async (res) =>  {
                 const response = await res.json();
+                const invalidWarning = document.getElementById("invalidWarning")
             switch (res.status) {
                 case 200:
                     localStorage.setItem('jwt', response.token);
-                    goto('/home');
+                    await goto('/home');
                     break;
                 case 400:
                     invalidWarning.innerText = response['error'];
@@ -58,7 +59,7 @@
                 bind:value={username}
                 required
             />
-            <label for="username" class="label">Username</label>
+            <label id="username" class="label">Username</label>
         </div>
 
         <div class="inputField">
@@ -69,7 +70,7 @@
                 bind:value={password}
 
             />
-            <label for="password" class="label">Password</label>
+            <label id="password" class="label">Password</label>
         </div>
         <a href="http://localhost:8081/register">
             <span id="createAccountLink">Click Here To Create An Account!</span>
@@ -111,13 +112,12 @@
         border-radius: 25px;
         background: none;
         padding: 15px;
-        margin: 10px;
         left: 28%;
         position: relative;
         font-weight: 700;
         width: 154px;
         display: inline-block;
-        margin-top: 20px;
+        margin: 20px 10px 10px;
     }
 
     #loginHeader {
@@ -156,7 +156,7 @@
         width: 100%;
         background: black;
         transform: scaleX(0);
-        transform-origin: 0%;
+        transform-origin: 0;
         /* opacity: 0; */
         transition: transform 500ms ease;
         top: 2px;
@@ -176,7 +176,7 @@
         z-index: -1;
         position: absolute;
         transform: translateY(-2rem);
-        transform-origin: 0%;
+        transform-origin: 0;
         transition: transform 400ms;
     }
 

@@ -35,7 +35,7 @@
                     localStorage.removeItem("jwt");
                     token = null;
                 }
-                goto("/login");
+                await goto("/login");
             })
             .catch((err) => {
                 // also a modal to tell user the error
@@ -46,7 +46,7 @@
     onMount(async () => {
         handleExpiredToken();
         if (!token) {
-            goto("/login");
+            await goto("/login");
         } else {
             const decodedToken = JSON.parse(atob(token.split(".")[1]));
             console.log(decodedToken.user);

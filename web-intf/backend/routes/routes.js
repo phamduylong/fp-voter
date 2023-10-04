@@ -21,11 +21,9 @@ const checkJwtExpiration = async (req, res, next) => {
             if (matchToken === true) {
                 return res.status(401).json({ message: 'Token is inactive' });
             }
-            else {
-                if (decodedToken.exp * 1000 < Date.now()) {
-                    // Token has expired, send a 401 Unauthorized response
-                    return res.status(401).json({ message: 'Token has expired' });
-                }
+            else if (decodedToken.exp * 1000 < Date.now()) {
+                // Token has expired, send a 401 Unauthorized response
+                return res.status(401).json({message: 'Token has expired'});
             }
 
             // Token is still valid, continue with the request
@@ -94,7 +92,7 @@ router.post('/login', async (req, res) => {
 router.post('/logout', checkJwtExpiration, async (req, res) => {
     const token = req.headers.authorization?.split(' ')[1];
     const decodedToken = JSON.parse(atob(token.split(".")[1]));
-    const expiryTime = decodedToken.exp;
+    const expiryTime = (decodedToken.exp * 1000);
     const inactiveToken = new JWT({ token: token, expiryTime: expiryTime });
     let tokenSaved = await inactiveToken.save();
     if (tokenSaved != {}) {
