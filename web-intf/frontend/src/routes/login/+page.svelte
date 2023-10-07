@@ -52,40 +52,28 @@
         <h1 id="loginHeader">Login</h1>
         <span id="invalidWarning"></span>
         <div class="inputField">
-            <input
-                type="text"
-                name="username"
-                class="input"
-                bind:value={username}
-                required
-            />
-            <label id="username" class="label">Username</label>
+            <label class="label">
+                <span>Username</span>
+                <input class="input" title="Input username" type="text"  bind:value={username} required/>
+            </label>
         </div>
-
         <div class="inputField">
-            <input
-                type="password"
-                name="password"
-                class="input"
-                bind:value={password}
-
-            />
-            <label id="password" class="label">Password</label>
+            <label class="label">s
+                <span>Password</span>
+                <input class="input" title="Input password" type="password"  bind:value={password} required/>
+            </label>
         </div>
-        <a href="http://localhost:8081/register">
-            <span id="createAccountLink">Click Here To Create An Account!</span>
-        </a> 
+        <div id="createAccountContainer">
+            <a href="http://localhost:8081/register">
+                <span id="createAccountText">Click <a id="createAccountLink">Here</a> To Create An Account!</span>
+            </a>
+        </div>
         <button
             type="submit"
             id="submitForm"
             bind:this={submit}
             style="border: 3px solid #73ad21;">Login</button
         >
-        
-        
-
-
-  
 
     </form>
 </main>
@@ -95,9 +83,11 @@
     * {
         font-family: "Kanit", sans-serif;
     }
+
+
     #loginForm {
         position: relative;
-        --text-color: black;
+        --text-color: white;
         max-width: 500px;
         top: 10vh;
         left: 40%;
@@ -105,6 +95,8 @@
         border-radius: 25px;
         background: none;
         padding: 20px;
+
+
     }
 
     #submitForm {
@@ -112,6 +104,7 @@
         border-radius: 25px;
         background: none;
         padding: 15px;
+        top: 80%;
         left: 28%;
         position: relative;
         font-weight: 700;
@@ -131,7 +124,7 @@
     .inputField {
         width: 100%;
         position: relative;
-        border-bottom: 2px dashed black;
+        border-bottom: 2px dashed white;
         margin: 4rem auto 1rem;
         /* transition: 500ms; */
     }
@@ -171,20 +164,7 @@
         opacity: 1;
     }
 
-    /* label animation */
-    .label {
-        z-index: -1;
-        position: absolute;
-        transform: translateY(-2rem);
-        transform-origin: 0;
-        transition: transform 400ms;
-    }
 
-    .inputField:focus-within .label,
-    .input:not(:placeholder-shown) + .label {
-        transform: scale(0.8) translateY(-5rem);
-        opacity: 1;
-    }
     #invalidWarning{
         position: relative;
         top: 3.5vh;
@@ -192,13 +172,21 @@
         left: 12vh;
         font-size: 20px;
     }
+    #createAccountContainer{
+        text-align: center;
+    }
+
+    #createAccountText{
+        margin-bottom: 10px;
+        font-size: 18px;
+        color:white;
+    }
     #createAccountLink{
         position: relative;
-        left: 7vh; 
         margin-bottom: 10px;
         font-size: 20px;
         text-decoration: underline;
-        color:blue;
+        color:white;
     }
 
 </style>

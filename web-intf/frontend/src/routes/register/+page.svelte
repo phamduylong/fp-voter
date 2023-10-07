@@ -10,7 +10,28 @@
     $: passwordStrengthBar = {
         value: 0,
         max: 3,
+        meter: "h-4 animate-pulse bg-red-600 h-2.5 rounded-full dark:bg-red-500"
     };
+
+    function changePasswordStrengthBarColor(strength){
+        switch (strength){
+            case 0:
+                passwordStrengthBar.meter = "h-4 animate-pulse bg-red-600 h-2.5 rounded-full dark:bg-red-500";
+                break;
+            case 1:
+                passwordStrengthBar.meter = "h-4 animate-pulse bg-orange-600 h-2.5 rounded-full dark:bg-orange-500";
+                break;
+            case 2:
+                passwordStrengthBar.meter = "h-4 animate-pulse bg-yellow-600 h-2.5 rounded-full dark:bg-yellow-500";
+                break;
+            case 3:
+                passwordStrengthBar.meter = "h-4 animate-pulse bg-green-600 h-2.5 rounded-full dark:bg-green-500";
+                break;
+
+        }
+    }
+
+
 
     function validatePassword() {
         validations = [
@@ -21,6 +42,8 @@
 
         strength = validations.reduce((acc, cur) => acc + cur);
         passwordStrengthBar.value = strength;
+
+        changePasswordStrengthBarColor(strength);
 
         if (strength === 3 && username !== "" && username !== undefined) {
             submit.disabled = false;
@@ -66,36 +89,30 @@
     <form id="registerForm" on:submit|preventDefault={postUserData}>
         <h1 id="registerHeader">Register</h1>
         <span id="invalidWarning" bind:this={invalid}></span>
-        <div class="inputField">
-            <input
-                type="text"
-                name="username"
-                class="input"
-                bind:value={username}
-                on:input={validatePassword}
-                required
-            />
-            <label id="username" class="label">Username</label>
-        </div>
 
         <div class="inputField">
-            <input
-                type="password"
-                name="password"
-                class="input"
-                bind:value={password}
-                on:input={validatePassword}
-            />
-            <label id="password" class="label">Password</label>
+            <label class="label">
+                <span>Username</span>
+                <input class="input" title="Input username" type="text"  name="username" bind:value={username} on:input={validatePassword} required/>
+            </label>
         </div>
-        <button disabled
-            type="submit"
-            id="submit"
-            bind:this={submit}
-            style="border: 3px solid orangered;">Create Account!</button
-        >
+        <div class="inputField">
+            <label class="label">
+                <span>Password</span>
+                <input class="input" title="Input password" name="password" type="password" bind:value={password} on:input={validatePassword}  required/>
+            </label>
+        </div>
+
+        <div id="loginContainer">
+            <a href="http://localhost:8081/login">
+                <span id="loginDirectionText">Already Having An Account? Click <a id="loginDirectionLink">Here</a> To Login!</span>
+            </a>
+        </div>
+
+        <button disabled type="submit" id="submit" bind:this={submit} >Create Account!</button>
         <div class="strength">
             <ProgressBar
+                    meter={passwordStrengthBar.meter}
                 label="Progress Bar"
                 value={passwordStrengthBar.value}
                 max={passwordStrengthBar.max}
@@ -104,12 +121,12 @@
 
         <ul>
             <li>
-                {validations[0] ? "✔️" : "❌"} must be at least 5 characters
+                {validations[0] ? "✔️" : "❌"} Must be at least 5 characters
             </li>
             <li>
-                {validations[1] ? "✔️" : "❌"} must contain a capital letter
+                {validations[1] ? "✔️" : "❌"} Must contain a capital letter
             </li>
-            <li>{validations[2] ? "✔️" : "❌"} must contain a number</li>
+            <li>{validations[2] ? "✔️" : "❌"} Must contain a number</li>
         </ul>
     </form>
 </main>
@@ -187,24 +204,16 @@
         opacity: 1;
     }
 
-    .label {
-        z-index: -1;
-        position: absolute;
-        transform: translateY(-2rem);
-        transform-origin: 0;
-        transition: transform 400ms;
-    }
 
-    .inputField:focus-within .label,
-    .input:not(:placeholder-shown) + .label {
-        transform: scale(0.8) translateY(-5rem);
-        opacity: 1;
-    }
 
     .strength {
         display: flex;
         height: 20px;
         width: 100%;
+    }
+
+    #submit{
+        border: 3px solid orangered;
     }
 
     #invalidWarning{
@@ -213,5 +222,22 @@
         text-align: center;
         left: 12vh;
         font-size: 20px;
+    }
+
+    #loginContainer{
+        text-align: center;
+    }
+
+    #loginDirectionText{
+        margin-bottom: 10px;
+        font-size: 18px;
+        color:white;
+    }
+    #loginDirectionLink{
+        position: relative;
+        margin-bottom: 10px;
+        font-size: 20px;
+        text-decoration: underline;
+        color:white;
     }
 </style>
