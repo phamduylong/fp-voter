@@ -1,4 +1,3 @@
-
 <script>
     import { goto } from "$app/navigation";
     let alertVisible = false;
@@ -84,8 +83,3 @@
     </aside>
     {/if}
 </main>
-
-<style>
-
-
-</style>

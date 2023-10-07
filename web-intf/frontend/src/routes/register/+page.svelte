@@ -3,7 +3,7 @@
     import { ProgressBar } from "@skeletonlabs/skeleton";
     let strength = 0;
     let validations = [];
-    let username;
+    let username = "";
     let password = "";
     let alertVisible = false;
     let alertMessage = "";
@@ -12,6 +12,9 @@
         max: 3,
         meter: "h-4 animate-pulse bg-red-600 h-2.5 rounded-full dark:bg-red-500"
     };
+
+    // button is disabled if username or password is empty or password strength is less than 3
+    $: credentialsMissing = username === "" || password === "" || strength < 3;
 
     const hideAlertTimeout = () => {
         setTimeout(() => {
@@ -42,8 +45,6 @@
         }
     }
 
-
-
     function validatePassword() {
         validations = [
             password.search(/[A-Za-z0-9]{5}/) > -1,
@@ -57,28 +58,26 @@
         changePasswordStrengthBarColor(strength);
     }
 
-    async function postUserData(){
+    function postUserData(){
         const user = {username: username, password: password}
-       await fetch("http://localhost:8080/register", {
-            method: "POST", // *GET, POST, PUT, DELETE, etc.
+        fetch("http://localhost:8080/register", {
+            method: "POST",
             headers: {
-            "Content-Type": "application/json",
+                "Content-Type": "application/json",
             },
-            body: JSON.stringify(user), // body data type must match "Content-Type" header
+            body: JSON.stringify(user), 
         }).then(async (res) =>  {
-           const response = await res.json();
-           switch (res.status) {
-               case 200:
+            const response = await res.json();
+            switch (res.status) {
+                case 200:
                    await goto('/login');
                    break;
-
-               // everything but 200 will be an error here
-               default:
+                default:
                    alertVisible = true;
                    alertMessage = response.error;
                    hideAlertTimeout();
                    break;
-           }
+            }
 
        }).catch(err => {
            alertVisible = true;
@@ -98,36 +97,37 @@
         <h3 class="h3 m-4 text-center">Register</h3>
         <label class="label m-4">
             <span>Username</span>
-            <input class="input" title="Input username" type="text"  name="username" bind:value={username} on:input={validatePassword} required/>
+            <input class="input" title="Input username" type="text"  name="username" bind:value={username} on:input={validatePassword}/>
         </label>
-        <label class="label  m-4">
+        <label class="label m-4 mb-10">
             <span>Password</span>
-            <input class="input" title="Input password" name="password" type="password" bind:value={password} on:input={validatePassword}  required/>
+            <input class="input" title="Input password" name="password" type="password" bind:value={password} on:input={validatePassword}/>
         </label>
         <button
+                disabled={credentialsMissing}
                 type="button"
                 class="btn variant-filled mr-4 mt-4 mb-10 absolute left-1/2 -translate-x-1/2 -translate-y-1/2 "
                 id="submitForm"
                 on:click={postUserData}>Register</button>
+                <br><br>
             <ProgressBar
-                    class="m-4 mt-16 w-[570px] inline-block"
+                    class="my-4"
                     meter={passwordStrengthBar.meter}
                     label="Progress Bar"
                     value={passwordStrengthBar.value}
                     max={passwordStrengthBar.max}
-
             />
 
         <ul class="list m-4">
             <li>
-                {validations[0] ? "✔️" : "❌"} Must be at least 5 characters
+                {validations[0] ? "✅" : "❌"} Must be at least 5 characters
             </li>
             <li>
-                {validations[1] ? "✔️" : "❌"} Must contain a capital letter
+                {validations[1] ? "✅" : "❌"} Must contain a capital letter
             </li>
-            <li>{validations[2] ? "✔️" : "❌"} Must contain a number</li>
+            <li>{validations[2] ? "✅" : "❌"} Must contain a number</li>
         </ul>
-        <br><br>
+        <br>
         <a href="http://localhost:8081/login" class="anchor m-4 absolute mb-10 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3/4 text-center">
             Already having an account? Click here to login!
         </a>
@@ -143,11 +143,4 @@
             <div class="alert-actions"><button class="btn variant-filled font-bold" on:click={hideAlert}>X</button></div>
         </aside>
     {/if}
-
-
-
 </main>
-
-<style>
-
-</style>
