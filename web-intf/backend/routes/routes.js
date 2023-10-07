@@ -42,6 +42,12 @@ const checkJwtExpiration = async (req, res, next) => {
 router.post('/register', async (req, res) => {
     const username = req.body.username;
     let password = req.body.password;
+    const passwordPattern = /^(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{5,}$/;
+    const regex = new RegExp(passwordPattern);
+    const isMatch = regex.test(password);
+    if(!isMatch){
+        return res.status(400).send({ error: "Password entered does not match pattern required!" });
+    }
 
     try {
         const user = await User.find({ username: username });
@@ -55,7 +61,7 @@ router.post('/register', async (req, res) => {
             }
             return res.status(500).send({ error: "Unable To Create User!" });
         }
-        return res.status(400).send({ error: "Error: User already exists!" });
+        return res.status(400).send({ error: "User already exists!" });
 
     } catch (error) {
         console.log(error);
@@ -77,15 +83,15 @@ router.post('/login', async (req, res) => {
                 const token = jwt.sign({ user: username }, JWT_KEY, { expiresIn: '1hr' });
                 return res.status(200).send({ token: token });
             } 
-                return res.status(401).send({ error: "Error: Incorrect Password!" });
+                return res.status(401).send({ error: "Incorrect Password!" });
         }
         else if (user.length > 1) {
-            return res.status(500).send({ error: "Error: Username duplicated!" });
+            return res.status(500).send({ error: "Username duplicated!" });
         } else if (user.length === 0) {
-            return res.status(400).send({ error: "Error: User Not Found!" });
+            return res.status(400).send({ error: "User Not Found!" });
         }
     } catch (error) {
-        return res.status(500).send({ error: "Error: Unable To Login!" });
+        return res.status(500).send({ error: "Unable To Login!" });
     }
 });
 

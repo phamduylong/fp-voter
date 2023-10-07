@@ -55,16 +55,16 @@
     <div class="card absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-1/3 p-4">
         <h3 class="h3 m-4 text-center">Login</h3>
             <label class="label m-4">
-                <p>Username</p>
+                <span>Username</span>
                 <input class="input" title="Input username" type="text"  bind:value={username} required/>
             </label>
             <label class="label m-4 mb-10">
-                <p>Password</p>
+                <span>Password</span>
                 <input class="input" title="Input password" type="password"  bind:value={password} required/>
             </label>
             <button
             type="button"
-            class="btn variant-filled ml-4 mr-4 mt-4 mb-4 absolute left-1/2 -translate-x-1/2 -translate-y-1/2"
+            class="btn variant-filled mr-4 mt-4 mb-4 absolute left-1/2 -translate-x-1/2 -translate-y-1/2"
             id="submitForm"
             on:click={postUserData}>Login</button>
             <br><br>
