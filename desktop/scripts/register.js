@@ -53,7 +53,7 @@ window.addEventListener("load", () => {
   * @throws {Error} if inputs are invalid/server sends an error through
   * @summary Attempts to register a new user.
   */
- const attemptRegister = async (username, password) => {
+ const attemptRegister = (username, password) => {
     fetch("http://localhost:8080/register", {
         method: "POST",
         headers: {

@@ -52,7 +52,7 @@ window.addEventListener("load", () => {
   * @param {string} password 
   * @throws {Error} if inputs are invalid/server sends an error through.
   */
-    const attemptLogin = async (username, password) => {
+    const attemptLogin = (username, password) => {
         fetch("http://localhost:8080/login", {
             method: "POST",
             headers: {
@@ -65,6 +65,7 @@ window.addEventListener("load", () => {
             const resBody = await res.json();
             switch (res.status) {
                 case 200:
+                    window.localStorage.setItem("token", resBody.token);
                     window.location.href = "./home.html";
                     break;
                 case 401:
