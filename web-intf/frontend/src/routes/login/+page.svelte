@@ -1,9 +1,21 @@
 
 <script>
     import { goto } from "$app/navigation";
-    let submit;
+    let alertVisible = false;
+    let alertMessage = "";
     let username;
     let password = "";
+
+    const hideAlertTimeout = () => {
+        setTimeout(() => {
+            alertVisible = false;
+        }, 3000);
+    };
+
+    const hideAlert = () => {
+        alertVisible = false;
+        clearTimeout(hideAlertTimeout);
+    };
 
     function postUserData(){
         const user = {username: username, password: password}
@@ -15,36 +27,28 @@
             body: JSON.stringify(user),
         }).then(async (res) =>  {
                 const response = await res.json();
-                const invalidWarning = document.getElementById("invalidWarning")
             switch (res.status) {
                 case 200:
                     localStorage.setItem('jwt', response.token);
                     await goto('/home');
                     break;
-                case 400:
-                    invalidWarning.innerText = response.error;
-                    invalidWarning.style.color = "red";
-                    break;
-                case 401:
-                    invalidWarning.innerText = response.error;
-                    invalidWarning.style.color = "red";
-                    break;
-                case 500:
-                    invalidWarning.innerText = response.error;
-                    invalidWarning.style.color = "red";
+                
+                // everything but 200 will be an error here    
+                default:
+                    alertVisible = true;
+                    alertMessage = response.error;
+                    hideAlertTimeout();
                     break;
             }
         
         }).catch(err => {
-            // also a modal to tell user the error
+            alertVisible = true;
+            alertMessage = err;
+            hideAlertTimeout();
             console.error(err);
         });
 
     }
-
-
-
-
 </script>
 
 <main>
@@ -64,11 +68,21 @@
             id="submitForm"
             on:click={postUserData}>Login</button>
             <br><br>
-            <a href="http://localhost:8081/register" class="anchor m-4 absolute left-1/2 -translate-x-1/2 -translate-y-1/2">
-                Not a user yet? Click here.
+            <a href="http://localhost:8081/register" class="anchor m-4 absolute left-1/2 -translate-x-1/2 -translate-y-1/2 w-3/4 text-center">
+                Not a user yet? Register now.
             </a>
             <br><br>
     </div>
+
+    {#if alertVisible}
+    <aside class="alert variant-filled-error w-3/4 absolute top-[90%] left-1/2 -translate-x-1/2 -translate-y-1/2 h-auto">
+        <div class="alert-message">
+            <h3 class="h3">Error</h3>
+            <p>{alertMessage}</p>
+        </div>
+        <div class="alert-actions"><button class="btn variant-filled font-bold" on:click={hideAlert}>X</button></div>
+    </aside>
+    {/if}
 </main>
 
 <style>
