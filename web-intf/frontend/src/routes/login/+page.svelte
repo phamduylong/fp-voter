@@ -2,8 +2,15 @@
     import { goto } from "$app/navigation";
     let alertVisible = false;
     let alertMessage = "";
-    let username;
+    let usernameStrength = 0;
+    let passwordStrength = 0;
+    let usernameValidations = [];
+    let passwordValidations = [];
+    let username = "";
     let password = "";
+
+    // button is disabled if username or password is empty or password passwordStrength is less than 4 or usernameStrength is less than 3
+    $: credentialsMissing = username === "" || password === "" || passwordStrength < 4 || usernameStrength < 3;
 
     const hideAlertTimeout = () => {
         setTimeout(() => {
@@ -15,6 +22,26 @@
         alertVisible = false;
         clearTimeout(hideAlertTimeout);
     };
+
+    function validateUsernameAndPassword() {
+
+        usernameValidations = [
+            username.search(/^(?![\d_])/) > -1,
+            username.search(/^(?!.*[^\w-])/) > -1,
+            username.search(/^.{4,20}$/) > -1,
+        ];
+        
+        passwordValidations = [
+            password.search(/^.{8,20}$/) > -1,
+            password.search(/[A-Z]/) > -1,
+            password.search(/[0-9]/) > -1,
+            password.search(/[@#$%^&+=!*_]/) > -1,
+        ];
+        usernameStrength = usernameValidations.reduce((acc, cur) => acc + cur);
+        passwordStrength = passwordValidations.reduce((acc, cur) => acc + cur);
+
+    }
+
 
     function postUserData(){
         const user = {username: username, password: password}
@@ -55,13 +82,13 @@
         <h3 class="h3 m-4 text-center">Login</h3>
             <label class="label m-4">
                 <span>Username</span>
-                <input class="input" title="Input username" type="text"  bind:value={username} required/>
+                <input class="input" title="Input username" type="text"  bind:value={username} on:input={validateUsernameAndPassword} />
             </label>
             <label class="label m-4 mb-10">
                 <span>Password</span>
-                <input class="input" title="Input password" type="password"  bind:value={password} required/>
+                <input class="input" title="Input password" type="password"  bind:value={password} on:input={validateUsernameAndPassword} />
             </label>
-            <button
+            <button disabled={credentialsMissing}
             type="button"
             class="btn variant-filled mr-4 mt-4 mb-4 absolute left-1/2 -translate-x-1/2 -translate-y-1/2"
             id="submitForm"

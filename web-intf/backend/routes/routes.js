@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const User = require('../models/User');
 const JWT = require('../models/JWT');
-const {checkInactiveToken} = require('../utilities/utilities');
+const {checkInactiveToken, checkUserValidations} = require('../utilities/utilities');
 const bcrypt = require("bcrypt");
 const jwt = require('jsonwebtoken');
 const dotenv = require('dotenv');
@@ -42,11 +42,8 @@ const checkJwtExpiration = async (req, res, next) => {
 router.post('/register', async (req, res) => {
     const username = req.body.username;
     let password = req.body.password;
-    const passwordPattern = /^(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{5,}$/;
-    const regex = new RegExp(passwordPattern);
-    const isMatch = regex.test(password);
-    if(!isMatch){
-        return res.status(400).send({ error: "Password entered does not match pattern required!" });
+    if(!checkUserValidations(username, password)){
+        return res.status(400).send({ error: "Username or password entered does not match pattern required!" });
     }
 
     try {
@@ -73,8 +70,9 @@ router.post('/register', async (req, res) => {
 router.post('/login', async (req, res) => {
     const username = req.body.username;
     const password = req.body.password;
-
-
+    if(!checkUserValidations(username, password)){
+        return res.status(400).send({ error: "Username or password entered does not match pattern required!" });
+    }
     try {
         const user = await User.find({ username: username })
         if (user.length === 1) {

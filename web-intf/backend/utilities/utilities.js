@@ -21,4 +21,13 @@ async function checkInactiveToken(token) {
 
 }
 
-module.exports = {checkInactiveToken}
+function checkUserValidations(username, password){
+    const usernameRegex = new RegExp(/^(?![\d_])(?!.*[^\w-]).{4,20}$/);
+    const isUsernameMatch = usernameRegex.test(username);
+    const passwordRegex = new RegExp(/^(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d\s]).{8,20}$/);
+    const isPwdMatch = passwordRegex.test(password);
+    return (isUsernameMatch && isPwdMatch)
+
+}
+
+module.exports = {checkInactiveToken, checkUserValidations}

@@ -1,20 +1,22 @@
 <script>
     import { goto } from "$app/navigation";
     import { ProgressBar } from "@skeletonlabs/skeleton";
-    let strength = 0;
-    let validations = [];
+    let usernameStrength = 0;
+    let passwordStrength = 0;
+    let usernameValidations = [];
+    let passwordValidations = [];
     let username = "";
     let password = "";
     let alertVisible = false;
     let alertMessage = "";
     $: passwordStrengthBar = {
         value: 0,
-        max: 3,
+        max: 7,
         meter: "h-4 animate-pulse bg-red-600 h-2.5 rounded-full dark:bg-red-500"
     };
 
-    // button is disabled if username or password is empty or password strength is less than 3
-    $: credentialsMissing = username === "" || password === "" || strength < 3;
+    // button is disabled if username or password is empty or password passwordStrength is less than 4 or usernameStrength is less than 3
+    $: credentialsMissing = username === "" || password === "" || passwordStrength < 4 || usernameStrength < 3;
 
     const hideAlertTimeout = () => {
         setTimeout(() => {
@@ -27,35 +29,42 @@
         clearTimeout(hideAlertTimeout);
     };
 
-    function changePasswordStrengthBarColor(strength){
-        switch (strength){
-            case 0:
+    function changePasswordStrengthBarColor(Strength){
+        switch (Strength){
+            case 0 || 1 :
                 passwordStrengthBar.meter = "h-4 animate-pulse bg-red-600 h-2.5 rounded-full dark:bg-red-500";
                 break;
-            case 1:
+            case 2 || 3:
                 passwordStrengthBar.meter = "h-4 animate-pulse bg-orange-600 h-2.5 rounded-full dark:bg-orange-500";
                 break;
-            case 2:
+            case 4 || 5 || 6:
                 passwordStrengthBar.meter = "h-4 animate-pulse bg-yellow-600 h-2.5 rounded-full dark:bg-yellow-500";
                 break;
-            case 3:
+            case 7:
                 passwordStrengthBar.meter = "h-4 animate-pulse bg-green-600 h-2.5 rounded-full dark:bg-green-500";
                 break;
 
         }
     }
 
-    function validatePassword() {
-        validations = [
-            password.search(/[A-Za-z0-9]{5}/) > -1,
+    function validateUsernameAndPassword() {
+
+        usernameValidations = [
+            username.search(/^(?![\d_])/) > -1,
+            username.search(/^(?!.*[^\w-])/) > -1,
+            username.search(/^.{4,20}$/) > -1,
+        ];
+        passwordValidations = [
+            password.search(/^.{8,20}$/) > -1,
             password.search(/[A-Z]/) > -1,
             password.search(/[0-9]/) > -1,
+            password.search(/[@#$%^&+=!*_]/) > -1,
         ];
+        usernameStrength = usernameValidations.reduce((acc, cur) => acc + cur);
+        passwordStrength = passwordValidations.reduce((acc, cur) => acc + cur);
+        passwordStrengthBar.value = passwordStrength + usernameStrength;
 
-        strength = validations.reduce((acc, cur) => acc + cur);
-        passwordStrengthBar.value = strength;
-
-        changePasswordStrengthBarColor(strength);
+        changePasswordStrengthBarColor(passwordStrengthBar.value);
     }
 
     function postUserData(){
@@ -97,11 +106,11 @@
         <h3 class="h3 m-4 text-center">Register</h3>
         <label class="label m-4">
             <span>Username</span>
-            <input class="input" title="Input username" type="text"  name="username" bind:value={username} on:input={validatePassword}/>
+            <input class="input" title="Input username" type="text"  name="username" bind:value={username} on:input={validateUsernameAndPassword}/>
         </label>
         <label class="label m-4 mb-10">
             <span>Password</span>
-            <input class="input" title="Input password" name="password" type="password" bind:value={password} on:input={validatePassword}/>
+            <input class="input" title="Input password" name="password" type="password" bind:value={password} on:input={validateUsernameAndPassword}/>
         </label>
         <button
                 disabled={credentialsMissing}
@@ -120,12 +129,26 @@
 
         <ul class="list m-4">
             <li>
-                {validations[0] ? "✅" : "❌"} Must be at least 5 characters
+                {usernameValidations[0] ? "✅" : "❌"} Username must not start with a digit or an underscore
             </li>
             <li>
-                {validations[1] ? "✅" : "❌"} Must contain a capital letter
+                {usernameValidations[1] ? "✅" : "❌"} Username should not contain whitespace or special characters
             </li>
-            <li>{validations[2] ? "✅" : "❌"} Must contain a number</li>
+            <li>
+                {usernameValidations[2] ? "✅" : "❌"} Username must be between 4 and 20 characters long
+            </li>
+            <li>
+                {passwordValidations[0] ? "✅" : "❌"} Password must be between 8 and 20 characters long
+            </li>
+            <li>
+                {passwordValidations[1] ? "✅" : "❌"} Password must contain a capital letter
+            </li>
+            <li>
+                {passwordValidations[2] ? "✅" : "❌"} Password must contain a number
+            </li>
+            <li>
+                {passwordValidations[3] ? "✅" : "❌"} Password must contain at a special character
+            </li>
         </ul>
         <br>
         <a href="http://localhost:8081/login" class="anchor m-4 absolute mb-10 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3/4 text-center">
