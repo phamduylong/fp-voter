@@ -25,10 +25,10 @@ window.addEventListener("load", () => {
 
     // ^ and $ ensure that the regular expression matches the entire input string, not just a part of it
     // (?![\d_]) ensures the username doesn't start with a digit (\d) or an underscore (_). 
-    // (?!.*[^\w\s]) checks for the absence of any character that is not a word character (\w) or whitespace character
+    // (?!.*[^\w-]) checks for the absence of any character that is not a word character (\w) or whitespace character
     // (\s). helps prevent SQL injection and JSON injection by disallowing characters that are commonly used for injection attacks.
     // .{4,20} is a quantifier that ensures the username is between 4 and 20 characters long.
-    const uidRegex = /^(?![\d_])(?!.*[^\w\s]).{4,20}$/;
+    const uidRegex = /^(?![\d_])(?!.*[^\w-]).{4,20}$/;
 
     // (?=.*[A-Za-z]) checks for the presence of at least one letter
     // (?=.*\d) checks for the presence of at least one digit
