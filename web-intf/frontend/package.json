@@ -20,5 +20,8 @@
     "tailwindcss": "^3.3.2",
     "vite": "^4.4.2"
   },
-  "type": "module"
+  "type": "module",
+  "dependencies": {
+    "@floating-ui/dom": "^1.5.3"
+  }
 }
