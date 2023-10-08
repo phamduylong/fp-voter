@@ -1,22 +1,22 @@
 <script>
     import { goto } from "$app/navigation";
     import { ProgressBar } from "@skeletonlabs/skeleton";
-    let usernameStrength = 0;
-    let passwordStrength = 0;
-    let usernameValidations = [];
-    let passwordValidations = [];
+    const usernameRegex = /^(?![\d_])(?!.*[^\w-]).{4,20}$/;
     let username = "";
     let password = "";
     let alertVisible = false;
     let alertMessage = "";
+    $: passwordLengthSuffices = password.search(/^([A-Za-z\d@#$%^&+=!*_]){8,20}$/) > -1;
+    $: passwordContainsCapitalLetter = password.search(/[A-Z]/) > -1;
+    $: passwordContainsDigit = password.search(/[0-9]/) > -1;
+    $: passwordContainsSpecialCharacter = password.search(/[@#$%^&+=!*_]/) > -1;
     $: passwordStrengthBar = {
-        value: 0,
-        max: 7,
+        value: [passwordLengthSuffices, passwordContainsCapitalLetter, passwordContainsDigit, passwordContainsSpecialCharacter].filter(r => r === true).length,
+        max: 4,
         meter: "h-4 animate-pulse bg-red-600 h-2.5 rounded-full dark:bg-red-500"
     };
-
-    // button is disabled if username or password is empty or password passwordStrength is less than 4 or usernameStrength is less than 3
-    $: credentialsMissing = username === "" || password === "" || passwordStrength < 4 || usernameStrength < 3;
+    $: usernameFormatInvalid = !usernameRegex.test(username);
+    $: credentialsMissing = username === "" || password === "" || passwordStrengthBar.value < 4 || usernameFormatInvalid;
 
     const hideAlertTimeout = () => {
         setTimeout(() => {
@@ -29,42 +29,26 @@
         clearTimeout(hideAlertTimeout);
     };
 
-    function changePasswordStrengthBarColor(Strength){
-        switch (Strength){
-            case 0 || 1 :
+    function updatePasswordStrengthBarColor() {
+        console.log(passwordStrengthBar.value);
+        switch (passwordStrengthBar.value) {
+            case 0:
                 passwordStrengthBar.meter = "h-4 animate-pulse bg-red-600 h-2.5 rounded-full dark:bg-red-500";
                 break;
-            case 2 || 3:
+            case 1:
                 passwordStrengthBar.meter = "h-4 animate-pulse bg-orange-600 h-2.5 rounded-full dark:bg-orange-500";
                 break;
-            case 4 || 5 || 6:
+            case 2:
+            case 3:
                 passwordStrengthBar.meter = "h-4 animate-pulse bg-yellow-600 h-2.5 rounded-full dark:bg-yellow-500";
                 break;
-            case 7:
+            case 4:
                 passwordStrengthBar.meter = "h-4 animate-pulse bg-green-600 h-2.5 rounded-full dark:bg-green-500";
                 break;
-
+            default:
+                passwordStrengthBar.meter = "h-4 animate-pulse bg-red-600 h-2.5 rounded-full dark:bg-red-500";
+                break;
         }
-    }
-
-    function validateUsernameAndPassword() {
-
-        usernameValidations = [
-            username.search(/^(?![\d_])/) > -1,
-            username.search(/^(?!.*[^\w-])/) > -1,
-            username.search(/^.{4,20}$/) > -1,
-        ];
-        passwordValidations = [
-            password.search(/^([A-Za-z\d@#$%^&+=!*_]){8,20}$/) > -1,
-            password.search(/[A-Z]/) > -1,
-            password.search(/[0-9]/) > -1,
-            password.search(/[@#$%^&+=!*_]/) > -1,
-        ];
-        usernameStrength = usernameValidations.reduce((acc, cur) => acc + cur);
-        passwordStrength = passwordValidations.reduce((acc, cur) => acc + cur);
-        passwordStrengthBar.value = passwordStrength + usernameStrength;
-
-        changePasswordStrengthBarColor(passwordStrengthBar.value);
     }
 
     function postUserData(){
@@ -106,11 +90,11 @@
         <h3 class="h3 m-4 text-center">Register</h3>
         <label class="label m-4">
             <span>Username</span>
-            <input class="input" title="Input username" type="text"  name="username" bind:value={username} on:input={validateUsernameAndPassword}/>
+            <input class="input" title="Input username" type="text"  name="username" bind:value={username}/>
         </label>
         <label class="label m-4 mb-10">
             <span>Password</span>
-            <input class="input" title="Input password" name="password" type="password" bind:value={password} on:input={validateUsernameAndPassword}/>
+            <input class="input" title="Input password" name="password" type="password" bind:value={password} on:input={updatePasswordStrengthBarColor}/>
         </label>
         <button
                 disabled={credentialsMissing}
@@ -129,25 +113,16 @@
 
         <ul class="list m-4">
             <li>
-                {usernameValidations[0] ? "✅" : "❌"} Username must not start with a digit or an underscore
+                {passwordLengthSuffices ? "✅" : "❌"} Password must be between 8 and 20 characters long
             </li>
             <li>
-                {usernameValidations[1] ? "✅" : "❌"} Username should not contain whitespace or special characters
+                {passwordContainsCapitalLetter ? "✅" : "❌"} Password must contain a capital letter
             </li>
             <li>
-                {usernameValidations[2] ? "✅" : "❌"} Username must be between 4 and 20 characters long
+                {passwordContainsDigit ? "✅" : "❌"} Password must contain a number
             </li>
             <li>
-                {passwordValidations[0] ? "✅" : "❌"} Password must be between 8 and 20 characters long
-            </li>
-            <li>
-                {passwordValidations[1] ? "✅" : "❌"} Password must contain a capital letter
-            </li>
-            <li>
-                {passwordValidations[2] ? "✅" : "❌"} Password must contain a number
-            </li>
-            <li>
-                {passwordValidations[3] ? "✅" : "❌"} Password must contain at a special character
+                {passwordContainsSpecialCharacter ? "✅" : "❌"} Password must contain at a special character
             </li>
         </ul>
         <br>

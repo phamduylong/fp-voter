@@ -2,13 +2,16 @@
     import { goto } from "$app/navigation";
     let alertVisible = false;
     let alertMessage = "";
-    let isUsernameMatch = false;
-    let isPwdMatch = false;
+    let usernameFormatInvalid = false;
+    let passwordFormatInvalid = false;
+    const usernameRegex = /^(?![\d_])(?!.*[^\w-]).{4,20}$/;
+    const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@#$%^&+=!*_])([A-Za-z\d@#$%^&+=!*_]){8,20}$/;
     let username = "";
     let password = "";
 
-    // button is disabled if username or password is empty or username and password doesn't match pattern
-    $: credentialsMissing = username === "" || password === "" || isUsernameMatch === false || isPwdMatch === false;
+    $: usernameFormatInvalid = !usernameRegex.test(username);
+    $: passwordFormatInvalid = !passwordRegex.test(password);
+    $: credentialsValid = username === "" || password === "" || usernameFormatInvalid || passwordFormatInvalid;
 
     const hideAlertTimeout = () => {
         setTimeout(() => {
@@ -20,16 +23,6 @@
         alertVisible = false;
         clearTimeout(hideAlertTimeout);
     };
-
-    function validateUsernameAndPassword() {
-
-        const usernameRegex = new RegExp(/^(?![\d_])(?!.*[^\w-]).{4,20}$/);
-        isUsernameMatch = usernameRegex.test(username);
-        const passwordRegex = new RegExp(/^(?=.*[A-Za-z])(?=.*\d)(?=.*[@#$%^&+=!*_])([A-Za-z\d@#$%^&+=!*_]){8,20}$/);
-        isPwdMatch = passwordRegex.test(password);
-
-    }
-
 
     function postUserData(){
         const user = {username: username, password: password}
@@ -70,13 +63,13 @@
         <h3 class="h3 m-4 text-center">Login</h3>
             <label class="label m-4">
                 <span>Username</span>
-                <input class="input" title="Input username" type="text"  bind:value={username} on:input={validateUsernameAndPassword} />
+                <input class="input" title="Input username" type="text"  bind:value={username} />
             </label>
             <label class="label m-4 mb-10">
                 <span>Password</span>
-                <input class="input" title="Input password" type="password"  bind:value={password} on:input={validateUsernameAndPassword} />
+                <input class="input" title="Input password" type="password"  bind:value={password} />
             </label>
-            <button disabled={credentialsMissing}
+            <button disabled={credentialsValid}
             type="button"
             class="btn variant-filled mr-4 mt-4 mb-4 absolute left-1/2 -translate-x-1/2 -translate-y-1/2"
             id="submitForm"
