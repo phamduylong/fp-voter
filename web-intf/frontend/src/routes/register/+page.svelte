@@ -55,7 +55,7 @@
             username.search(/^.{4,20}$/) > -1,
         ];
         passwordValidations = [
-            password.search(/^.{8,20}$/) > -1,
+            password.search(/^([A-Za-z\d@#$%^&+=!*_]){8,20}$/) > -1,
             password.search(/[A-Z]/) > -1,
             password.search(/[0-9]/) > -1,
             password.search(/[@#$%^&+=!*_]/) > -1,

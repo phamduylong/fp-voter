@@ -2,15 +2,13 @@
     import { goto } from "$app/navigation";
     let alertVisible = false;
     let alertMessage = "";
-    let usernameStrength = 0;
-    let passwordStrength = 0;
-    let usernameValidations = [];
-    let passwordValidations = [];
+    let isUsernameMatch = false;
+    let isPwdMatch = false;
     let username = "";
     let password = "";
 
-    // button is disabled if username or password is empty or password passwordStrength is less than 4 or usernameStrength is less than 3
-    $: credentialsMissing = username === "" || password === "" || passwordStrength < 4 || usernameStrength < 3;
+    // button is disabled if username or password is empty or username and password doesn't match pattern
+    $: credentialsMissing = username === "" || password === "" || isUsernameMatch === false || isPwdMatch === false;
 
     const hideAlertTimeout = () => {
         setTimeout(() => {
@@ -25,20 +23,10 @@
 
     function validateUsernameAndPassword() {
 
-        usernameValidations = [
-            username.search(/^(?![\d_])/) > -1,
-            username.search(/^(?!.*[^\w-])/) > -1,
-            username.search(/^.{4,20}$/) > -1,
-        ];
-        
-        passwordValidations = [
-            password.search(/^.{8,20}$/) > -1,
-            password.search(/[A-Z]/) > -1,
-            password.search(/[0-9]/) > -1,
-            password.search(/[@#$%^&+=!*_]/) > -1,
-        ];
-        usernameStrength = usernameValidations.reduce((acc, cur) => acc + cur);
-        passwordStrength = passwordValidations.reduce((acc, cur) => acc + cur);
+        const usernameRegex = new RegExp(/^(?![\d_])(?!.*[^\w-]).{4,20}$/);
+        isUsernameMatch = usernameRegex.test(username);
+        const passwordRegex = new RegExp(/^(?=.*[A-Za-z])(?=.*\d)(?=.*[@#$%^&+=!*_])([A-Za-z\d@#$%^&+=!*_]){8,20}$/);
+        isPwdMatch = passwordRegex.test(password);
 
     }
 
