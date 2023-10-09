@@ -1,58 +1,29 @@
 <script>
     import { goto } from "$app/navigation";
     import { ProgressBar } from "@skeletonlabs/skeleton";
+    import {alertState} from "$lib/alertStore.js";
     const usernameRegex = /^(?![\d_])(?!.*[^\w-]).{4,20}$/;
     let username = "";
     let password = "";
-    let alertVisible = false;
-    let alertMessage = "";
+    const meters = ["","h-4 animate-pulse bg-red-600 h-2.5 rounded-full dark:bg-red-500", "h-4 animate-pulse bg-orange-600 h-2.5 rounded-full dark:bg-orange-500",
+        "h-4 animate-pulse bg-orange-600 h-2.5 rounded-full dark:bg-yellow-500", "h-4 animate-pulse bg-orange-600 h-2.5 rounded-full dark:bg-green-500"];
+
     $: passwordLengthSuffices = password.search(/^([A-Za-z\d@#$%^&+=!*_]){8,20}$/) > -1;
     $: passwordContainsCapitalLetter = password.search(/[A-Z]/) > -1;
     $: passwordContainsDigit = password.search(/[0-9]/) > -1;
     $: passwordContainsSpecialCharacter = password.search(/[@#$%^&+=!*_]/) > -1;
-    $: passwordStrengthBar = {
-        value: [passwordLengthSuffices, passwordContainsCapitalLetter, passwordContainsDigit, passwordContainsSpecialCharacter].filter(r => r === true).length,
-        max: 4,
-        meter: "h-4 animate-pulse bg-red-600 h-2.5 rounded-full dark:bg-red-500"
-    };
+    $: value = [passwordLengthSuffices, passwordContainsCapitalLetter, passwordContainsDigit, passwordContainsSpecialCharacter].filter(r => r === true).length;
+    $: max = 4;
+    $: meter = meters[value];
+
     $: usernameFormatInvalid = !usernameRegex.test(username);
-    $: credentialsMissing = username === "" || password === "" || passwordStrengthBar.value < 4 || usernameFormatInvalid;
+    $: credentialsInvalid = username === "" || password === "" || value < 4 || usernameFormatInvalid;
 
-    const hideAlertTimeout = () => {
-        setTimeout(() => {
-            alertVisible = false;
-        }, 3000);
-    };
 
-    const hideAlert = () => {
-        alertVisible = false;
-        clearTimeout(hideAlertTimeout);
-    };
-
-    function updatePasswordStrengthBarColor() {
-        console.log(passwordStrengthBar.value);
-        switch (passwordStrengthBar.value) {
-            case 0:
-                passwordStrengthBar.meter = "h-4 animate-pulse bg-red-600 h-2.5 rounded-full dark:bg-red-500";
-                break;
-            case 1:
-                passwordStrengthBar.meter = "h-4 animate-pulse bg-orange-600 h-2.5 rounded-full dark:bg-orange-500";
-                break;
-            case 2:
-            case 3:
-                passwordStrengthBar.meter = "h-4 animate-pulse bg-yellow-600 h-2.5 rounded-full dark:bg-yellow-500";
-                break;
-            case 4:
-                passwordStrengthBar.meter = "h-4 animate-pulse bg-green-600 h-2.5 rounded-full dark:bg-green-500";
-                break;
-            default:
-                passwordStrengthBar.meter = "h-4 animate-pulse bg-red-600 h-2.5 rounded-full dark:bg-red-500";
-                break;
-        }
-    }
 
     function postUserData(){
-        const user = {username: username, password: password}
+
+        const user = {username: username, password: password};
         fetch("http://localhost:8080/register", {
             method: "POST",
             headers: {
@@ -66,16 +37,17 @@
                    await goto('/login');
                    break;
                 default:
-                   alertVisible = true;
-                   alertMessage = response.error;
-                   hideAlertTimeout();
+                    if(response.error){
+                        alertState.show(response.error,"error");
+                    }else{
+                        alertState.show("Failed to register!","error");
+                    }
+
                    break;
             }
 
        }).catch(err => {
-           alertVisible = true;
-           alertMessage = err;
-           hideAlertTimeout();
+           alertState.show();
            console.error(err);
        });
 
@@ -94,21 +66,21 @@
         </label>
         <label class="label m-4 mb-10">
             <span>Password</span>
-            <input class="input" title="Input password" name="password" type="password" bind:value={password} on:input={updatePasswordStrengthBarColor}/>
+            <input class="input" title="Input password" name="password" type="password" bind:value={password} />
         </label>
         <button
-                disabled={credentialsMissing}
+                disabled={credentialsInvalid}
                 type="button"
-                class="btn variant-filled mr-4 mt-4 mb-10 absolute left-1/2 -translate-x-1/2 -translate-y-1/2 "
+                class="btn variant-filled mr-4 mt-4 mb-10 absolute left-1/2 -translate-x-1/2 -translate-y-1/2"
                 id="submitForm"
                 on:click={postUserData}>Register</button>
                 <br><br>
             <ProgressBar
                     class="my-4"
-                    meter={passwordStrengthBar.meter}
+                    {meter}
                     label="Progress Bar"
-                    value={passwordStrengthBar.value}
-                    max={passwordStrengthBar.max}
+                    {value}
+                    {max}
             />
 
         <ul class="list m-4">
@@ -132,13 +104,5 @@
         <br><br>
     </div>
 
-    {#if alertVisible}
-        <aside class="alert variant-filled-error w-3/4 absolute top-[90%] left-1/2 -translate-x-1/2 -translate-y-1/2 h-auto">
-            <div class="alert-message">
-                <h3 class="h3">Error</h3>
-                <p>{alertMessage}</p>
-            </div>
-            <div class="alert-actions"><button class="btn variant-filled font-bold" on:click={hideAlert}>X</button></div>
-        </aside>
-    {/if}
+
 </main>
