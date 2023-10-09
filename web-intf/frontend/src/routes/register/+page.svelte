@@ -1,218 +1,108 @@
 <script>
     import { goto } from "$app/navigation";
     import { ProgressBar } from "@skeletonlabs/skeleton";
-    import { redirect } from "@sveltejs/kit";
-    let strength = 0;
-    let validations = [];
-    let submit;
-    let username;
+    import {alertState} from "$lib/alertStore.js";
+    const usernameRegex = /^(?![\d_])(?!.*[^\w-]).{4,20}$/;
+    let username = "";
     let password = "";
-    let invalid = ""
-    $: passwordStrengthBar = {
-        value: 0,
-        max: 3,
-    };
+    const meters = ["","h-4 animate-pulse bg-red-600 h-2.5 rounded-full dark:bg-red-500", "h-4 animate-pulse bg-orange-600 h-2.5 rounded-full dark:bg-orange-500",
+        "h-4 animate-pulse bg-orange-600 h-2.5 rounded-full dark:bg-yellow-500", "h-4 animate-pulse bg-orange-600 h-2.5 rounded-full dark:bg-green-500"];
 
-    function validatePassword() {
-        validations = [
-            password.search(/[A-Za-z0-9]{5}/) > -1,
-            password.search(/[A-Z]/) > -1,
-            password.search(/[0-9]/) > -1,
-        ];
+    $: passwordLengthSuffices = password.search(/^([A-Za-z\d@#$%^&+=!*_]){8,20}$/) > -1;
+    $: passwordContainsCapitalLetter = password.search(/[A-Z]/) > -1;
+    $: passwordContainsDigit = password.search(/[0-9]/) > -1;
+    $: passwordContainsSpecialCharacter = password.search(/[@#$%^&+=!*_]/) > -1;
+    $: value = [passwordLengthSuffices, passwordContainsCapitalLetter, passwordContainsDigit, passwordContainsSpecialCharacter].filter(r => r === true).length;
+    $: max = 4;
+    $: meter = meters[value];
 
-        strength = validations.reduce((acc, cur) => acc + cur);
-        passwordStrengthBar.value = strength;
+    $: usernameFormatInvalid = !usernameRegex.test(username);
+    $: credentialsInvalid = username === "" || password === "" || value < 4 || usernameFormatInvalid;
 
-        if (strength == 3 && username != "" && username != undefined) {
-            submit.disabled = false;
-            submit.style = "border: 3px solid #73AD21;";
-        } else {
-            submit.disabled = true;
-            submit.style = "border: 3px solid orangered;";
-        }
-    }
 
-    async function postUserData(){
-        const user = {username: username, password: password}
-       await fetch("http://localhost:8080/register", {
-            method: "POST", // *GET, POST, PUT, DELETE, etc.
+
+    function postUserData(){
+
+        const user = {username: username, password: password};
+        fetch("http://localhost:8080/register", {
+            method: "POST",
             headers: {
-            "Content-Type": "application/json",
+                "Content-Type": "application/json",
             },
-            body: JSON.stringify(user), // body data type must match "Content-Type" header
-        }).then(async (res) => {
-            if(res.status == 200) {
-                // handle with a message box along with a link to redirect to login page?
-                goto('/login')
-            }else if(res.status == 400){
-                res = await res.json()
-                invalidWarning.innerText = res['error']
-                invalidWarning.style.color = "red"
-            }else if(res.status == 500){
-                res = await res.json()
-                invalidWarning.innerText = res['error']
-                invalidWarning.style.color = "red"
+            body: JSON.stringify(user), 
+        }).then(async (res) =>  {
+            const response = await res.json();
+            switch (res.status) {
+                case 200:
+                   await goto('/login');
+                   break;
+                default:
+                    if(response.error){
+                        alertState.show(response.error,"error");
+                    }else{
+                        alertState.show("Failed to register!","error");
+                    }
+
+                   break;
             }
-        }).catch(err => {
-            // also a modal to tell user the error
-            console.log(err)
-        });
+
+       }).catch(err => {
+           alertState.show();
+           console.error(err);
+       });
+
 
     }
 
 </script>
 
 <main>
-    <form id="registerForm" on:submit|preventDefault={postUserData}>
-        <h1 id="registerHeader">Register</h1>
-        <span id="invalidWarning" bind:this={invalid}></span>
-        <div class="inputField">
-            <input
-                type="text"
-                name="username"
-                class="input"
-                bind:value={username}
-                on:input={validatePassword}
-                required
-            />
-            <label for="username" class="label">Username</label>
-        </div>
 
-        <div class="inputField">
-            <input
-                type="password"
-                name="password"
-                class="input"
-                bind:value={password}
-                on:input={validatePassword}
-            />
-            <label for="password" class="label">Password</label>
-        </div>
+    <div class="card absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-1/3 p-4 ">
+        <h3 class="h3 m-4 text-center">Register</h3>
+        <label class="label m-4">
+            <span>Username</span>
+            <input class="input" title="Input username" type="text"  name="username" bind:value={username}/>
+        </label>
+        <label class="label m-4 mb-10">
+            <span>Password</span>
+            <input class="input" title="Input password" name="password" type="password" bind:value={password} />
+        </label>
         <button
-            type="submit"
-            id="submit"
-            disabled={true}
-            bind:this={submit}
-            style="border: 3px solid orangered;">Create Account!</button
-        >
-        <div class="strength">
+                disabled={credentialsInvalid}
+                type="button"
+                class="btn variant-filled mr-4 mt-4 mb-10 absolute left-1/2 -translate-x-1/2 -translate-y-1/2"
+                id="submitForm"
+                on:click={postUserData}>Register</button>
+                <br><br>
             <ProgressBar
-                label="Progress Bar"
-                value={passwordStrengthBar.value}
-                max={passwordStrengthBar.max}
+                    class="my-4"
+                    {meter}
+                    label="Progress Bar"
+                    {value}
+                    {max}
             />
-        </div>
 
-        <ul>
+        <ul class="list m-4">
             <li>
-                {validations[0] ? "✔️" : "❌"} must be at least 5 characters
+                {passwordLengthSuffices ? "✅" : "❌"} Password must be between 8 and 20 characters long
             </li>
             <li>
-                {validations[1] ? "✔️" : "❌"} must contain a capital letter
+                {passwordContainsCapitalLetter ? "✅" : "❌"} Password must contain a capital letter
             </li>
-            <li>{validations[2] ? "✔️" : "❌"} must contain a number</li>
+            <li>
+                {passwordContainsDigit ? "✅" : "❌"} Password must contain a number
+            </li>
+            <li>
+                {passwordContainsSpecialCharacter ? "✅" : "❌"} Password must contain at a special character
+            </li>
         </ul>
-    </form>
+        <br>
+        <a href="http://localhost:8081/login" class="anchor m-4 absolute mb-10 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3/4 text-center">
+            Already having an account? Click here to login!
+        </a>
+        <br><br>
+    </div>
+
+
 </main>
-
-<style>
-    @import url("https://fonts.googleapis.com/css2?family=Kanit:wght@400;700&family=Montserrat&family=Roboto:wght@400;700&display=swap");
-    * {
-        font-family: "Kanit", sans-serif;
-    }
-    #registerForm {
-        position: relative;
-        --text-color: black;
-        max-width: 500px;
-        top: 10vh;
-        left: 40%;
-        border: 2px solid #73ad21;
-        border-radius: 25px;
-        background: none;
-        padding: 20px;
-    }
-
-    #submit {
-        border: 3px solid #73ad21;
-        border-radius: 25px;
-        background: none;
-        padding: 15px;
-        margin: 10px;
-        left: 28%;
-        position: relative;
-        font-weight: 700;
-    }
-
-    #registerHeader {
-        left: 38%;
-        position: absolute;
-        font-size: 25px;
-        font-weight: 700;
-    }
-    .inputField {
-        width: 100%;
-        position: relative;
-        border-bottom: 2px dashed black;
-        margin: 4rem auto 1rem;
-    }
-
-    .input {
-        border: none;
-        margin: 0;
-        width: 100%;
-        padding: 0.25rem 0;
-        background: none;
-        color: white;
-        font-size: 1.2rem;
-    }
-
-    .inputField::after {
-        content: "";
-        position: relative;
-        display: block;
-        height: 4px;
-        width: 100%;
-        background: black;
-        transform: scaleX(0);
-        transform-origin: 0%;
-        transition: transform 500ms ease;
-        top: 2px;
-    }
-
-    .inputField:focus-within {
-        border-color: transparent;
-    }
-
-    .inputField:focus-within::after {
-        transform: scaleX(1);
-        opacity: 1;
-    }
-
-    .label {
-        z-index: -1;
-        position: absolute;
-        transform: translateY(-2rem);
-        transform-origin: 0%;
-        transition: transform 400ms;
-    }
-
-    .inputField:focus-within .label,
-    .input:not(:placeholder-shown) + .label {
-        transform: scale(0.8) translateY(-5rem);
-        opacity: 1;
-    }
-
-    .strength {
-        display: flex;
-        height: 20px;
-        width: 100%;
-    }
-
-    #invalidWarning{
-        position: relative;
-        top: 3.5vh;
-        text-align: center;
-        left: 12vh;
-        font-size: 20px;
-    }
-</style>

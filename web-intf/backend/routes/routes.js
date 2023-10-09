@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const User = require('../models/User');
 const JWT = require('../models/JWT');
-const {checkInactiveToken} = require('../utilities/utilities');
+const {checkInactiveToken, checkUserValidations} = require('../utilities/utilities');
 const bcrypt = require("bcrypt");
 const jwt = require('jsonwebtoken');
 const dotenv = require('dotenv');
@@ -21,11 +21,9 @@ const checkJwtExpiration = async (req, res, next) => {
             if (matchToken === true) {
                 return res.status(401).json({ message: 'Token is inactive' });
             }
-            else {
-                if (decodedToken.exp * 1000 < Date.now()) {
-                    // Token has expired, send a 401 Unauthorized response
-                    return res.status(401).json({ message: 'Token has expired' });
-                }
+            else if (decodedToken.exp * 1000 < Date.now()) {
+                // Token has expired, send a 401 Unauthorized response
+                return res.status(401).json({message: 'Token has expired'});
             }
 
             // Token is still valid, continue with the request
@@ -44,6 +42,9 @@ const checkJwtExpiration = async (req, res, next) => {
 router.post('/register', async (req, res) => {
     const username = req.body.username;
     let password = req.body.password;
+    if(!checkUserValidations(username, password)){
+        return res.status(400).send({ error: "Username or password entered does not match pattern required!" });
+    }
 
     try {
         const user = await User.find({ username: username });
@@ -57,7 +58,7 @@ router.post('/register', async (req, res) => {
             }
             return res.status(500).send({ error: "Unable To Create User!" });
         }
-        return res.status(400).send({ error: "Error: User already exists!" });
+        return res.status(400).send({ error: "User already exists!" });
 
     } catch (error) {
         console.log(error);
@@ -69,8 +70,9 @@ router.post('/register', async (req, res) => {
 router.post('/login', async (req, res) => {
     const username = req.body.username;
     const password = req.body.password;
-
-
+    if(!checkUserValidations(username, password)){
+        return res.status(400).send({ error: "Username or password entered does not match pattern required!" });
+    }
     try {
         const user = await User.find({ username: username })
         if (user.length === 1) {
@@ -79,22 +81,22 @@ router.post('/login', async (req, res) => {
                 const token = jwt.sign({ user: username }, JWT_KEY, { expiresIn: '1hr' });
                 return res.status(200).send({ token: token });
             } 
-                return res.status(401).send({ error: "Error: Incorrect Password!" });
+                return res.status(401).send({ error: "Incorrect Password!" });
         }
         else if (user.length > 1) {
-            return res.status(500).send({ error: "Error: Username duplicated!" });
+            return res.status(500).send({ error: "Username duplicated!" });
         } else if (user.length === 0) {
-            return res.status(400).send({ error: "Error: User Not Found!" });
+            return res.status(400).send({ error: "User Not Found!" });
         }
     } catch (error) {
-        return res.status(500).send({ error: "Error: Unable To Login!" });
+        return res.status(500).send({ error: "Unable To Login!" });
     }
 });
 
 router.post('/logout', checkJwtExpiration, async (req, res) => {
     const token = req.headers.authorization?.split(' ')[1];
     const decodedToken = JSON.parse(atob(token.split(".")[1]));
-    const expiryTime = decodedToken.exp;
+    const expiryTime = (decodedToken.exp * 1000);
     const inactiveToken = new JWT({ token: token, expiryTime: expiryTime });
     let tokenSaved = await inactiveToken.save();
     if (tokenSaved != {}) {

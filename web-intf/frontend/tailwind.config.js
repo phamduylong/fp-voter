@@ -1,5 +1,6 @@
 /** @type {import('tailwindcss').Config}*/
 const { skeleton } = require('@skeletonlabs/tw-plugin');
+import forms from '@tailwindcss/forms';
 
 /** @type {import('tailwindcss').Config} */
 module.exports = {
@@ -17,6 +18,7 @@ module.exports = {
 	plugins: [
 		skeleton({
 			themes: { preset: [ "skeleton", "wintry", "modern" ] }
-		})
+		}),
+		forms
 	]
 }
