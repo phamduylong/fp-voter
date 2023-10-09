@@ -4,21 +4,30 @@ const JWT = require('../models/JWT');
 async function deleteExpiredTokens() {
     const tokens = await JWT.find({});
     for (let i = 0; i < tokens.length; i++) {
-        if (tokens[i].expiryTime * 1000 < Date.now()) {
+        if (tokens[i].expiryTime  < Date.now()) {
             await tokens[i].deleteOne({ _id: tokens[i]._id });
         }
     }
 }
 async function checkInactiveToken(token) {
-    deleteExpiredTokens();
+    await deleteExpiredTokens();
     const inactiveToken = await JWT.find({ token: token });
-    //Check if theres no inactive token
+    //Check if there's no inactive token
     if (inactiveToken.length === 0) {
         return false;
     }
     //Check if inactive token already expired
-    return (inactiveToken[0].expiryTime * 1000) < Date.now()
+    return inactiveToken[0].expiryTime < Date.now()
 
 }
 
-module.exports = {checkInactiveToken}
+function checkUserValidations(username, password){
+    const usernameRegex = new RegExp(/^(?![\d_])(?!.*[^\w-]).{4,20}$/);
+    const isUsernameMatch = usernameRegex.test(username);
+    const passwordRegex = new RegExp(/^(?=.*[A-Za-z])(?=.*\d)(?=.*[@#$%^&+=!*_])([A-Za-z\d@#$%^&+=!*_]){8,20}$/);
+    const isPwdMatch = passwordRegex.test(password);
+    return (isUsernameMatch && isPwdMatch)
+
+}
+
+module.exports = {checkInactiveToken, checkUserValidations}

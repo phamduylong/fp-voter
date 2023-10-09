@@ -1,204 +1,73 @@
-
 <script>
     import { goto } from "$app/navigation";
-    let submit;
-    let username;
+    import {alertState} from "$lib/alertStore.js";
+    const usernameRegex = /^(?![\d_])(?!.*[^\w-]).{4,20}$/;
+    const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@#$%^&+=!*_])([A-Za-z\d@#$%^&+=!*_]){8,20}$/;
+    let username = "";
     let password = "";
 
-    async function postUserData(){
+    $: usernameFormatInvalid = !usernameRegex.test(username);
+    $: passwordFormatInvalid = !passwordRegex.test(password);
+    $: credentialsInvalid = username === "" || password === "" || usernameFormatInvalid || passwordFormatInvalid;
+
+
+
+    function postUserData(){
         const user = {username: username, password: password}
-       await fetch("http://localhost:8080/login", {
-            method: "POST", // *GET, POST, PUT, DELETE, etc.
+       fetch("http://localhost:8080/login", {
+            method: "POST",
             headers: {
-            "Content-Type": "application/json",
+                "Content-Type": "application/json",
             },
-            body: JSON.stringify(user), // body data type must match "Content-Type" header
+            body: JSON.stringify(user),
         }).then(async (res) =>  {
                 const response = await res.json();
             switch (res.status) {
                 case 200:
                     localStorage.setItem('jwt', response.token);
-                    goto('/home');
+                    await goto('/home');
                     break;
-                case 400:
-                    invalidWarning.innerText = response['error'];
-                    invalidWarning.style.color = "red";
-                    break;
-                case 401:
-                    invalidWarning.innerText = response['error'];
-                    invalidWarning.style.color = "red";
-                    break;
-                case 500:
-                    invalidWarning.innerText = response['error'];
-                    invalidWarning.style.color = "red";
+                
+                // everything but 200 will be an error here    
+                default:
+                    if(response.error){
+                        alertState.show(response.error,"error");
+                    }else{
+                        alertState.show("Failed to login!","error");
+                    }
                     break;
             }
         
         }).catch(err => {
-            // also a modal to tell user the error
+            alertState.show();
             console.error(err);
         });
 
     }
-
-
-
-
 </script>
 
 <main>
-    <form id="loginForm" on:submit|preventDefault={postUserData}>
-        <h1 id="loginHeader">Login</h1>
-        <span id="invalidWarning"></span>
-        <div class="inputField">
-            <input
-                type="text"
-                name="username"
-                class="input"
-                bind:value={username}
-                required
-            />
-            <label for="username" class="label">Username</label>
-        </div>
-
-        <div class="inputField">
-            <input
-                type="password"
-                name="password"
-                class="input"
-                bind:value={password}
-
-            />
-            <label for="password" class="label">Password</label>
-        </div>
-        <a href="http://localhost:8081/register">
-            <span id="createAccountLink">Click Here To Create An Account!</span>
-        </a> 
-        <button
-            type="submit"
+    <div class="card absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-1/3 p-4">
+        <h3 class="h3 m-4 text-center">Login</h3>
+            <label class="label m-4">
+                <span>Username</span>
+                <input class="input" title="Input username" type="text"  bind:value={username} />
+            </label>
+            <label class="label m-4 mb-10">
+                <span>Password</span>
+                <input class="input" title="Input password" type="password"  bind:value={password} />
+            </label>
+            <button disabled={credentialsInvalid}
+            type="button"
+            class="btn variant-filled mr-4 mt-4 mb-4 absolute left-1/2 -translate-x-1/2 -translate-y-1/2"
             id="submitForm"
-            bind:this={submit}
-            style="border: 3px solid #73ad21;">Login</button
-        >
-        
-        
+            on:click={postUserData}>Login</button>
+            <br><br>
+            <a href="http://localhost:8081/register" class="anchor m-4 absolute left-1/2 -translate-x-1/2 -translate-y-1/2 w-3/4 text-center">
+                Not a user yet? Register now.
+            </a>
+            <br><br>
+    </div>
 
 
-  
-
-    </form>
 </main>
-
-<style>
-    @import url("https://fonts.googleapis.com/css2?family=Kanit:wght@400;700&family=Montserrat&family=Roboto:wght@400;700&display=swap");
-    * {
-        font-family: "Kanit", sans-serif;
-    }
-    #loginForm {
-        position: relative;
-        --text-color: black;
-        max-width: 500px;
-        top: 10vh;
-        left: 40%;
-        border: 2px solid #73ad21;
-        border-radius: 25px;
-        background: none;
-        padding: 20px;
-    }
-
-    #submitForm {
-        border: 3px solid #73ad21;
-        border-radius: 25px;
-        background: none;
-        padding: 15px;
-        margin: 10px;
-        left: 28%;
-        position: relative;
-        font-weight: 700;
-        width: 154px;
-        display: inline-block;
-        margin-top: 20px;
-    }
-
-    #loginHeader {
-        left: 40%;
-        position: absolute;
-        text-align: center;
-        font-size: 25px;
-        font-weight: 700;
-        
-    }
-    .inputField {
-        width: 100%;
-        position: relative;
-        border-bottom: 2px dashed black;
-        margin: 4rem auto 1rem;
-        /* transition: 500ms; */
-    }
-
-    .input {
-        border: none;
-        margin: 0;
-        width: 100%;
-        padding: 0.25rem 0;
-        background: none;
-        color: white;
-        font-size: 1.2rem;
-        /* transition: border 500ms; */
-    }
-
-    /* border animation */
-    .inputField::after {
-        content: "";
-        position: relative;
-        display: block;
-        height: 4px;
-        width: 100%;
-        background: black;
-        transform: scaleX(0);
-        transform-origin: 0%;
-        /* opacity: 0; */
-        transition: transform 500ms ease;
-        top: 2px;
-    }
-
-    .inputField:focus-within {
-        border-color: transparent;
-    }
-
-    .inputField:focus-within::after {
-        transform: scaleX(1);
-        opacity: 1;
-    }
-
-    /* label animation */
-    .label {
-        z-index: -1;
-        position: absolute;
-        transform: translateY(-2rem);
-        transform-origin: 0%;
-        transition: transform 400ms;
-    }
-
-    .inputField:focus-within .label,
-    .input:not(:placeholder-shown) + .label {
-        transform: scale(0.8) translateY(-5rem);
-        opacity: 1;
-    }
-    #invalidWarning{
-        position: relative;
-        top: 3.5vh;
-        text-align: center;
-        left: 12vh;
-        font-size: 20px;
-    }
-    #createAccountLink{
-        position: relative;
-        left: 7vh; 
-        margin-bottom: 10px;
-        font-size: 20px;
-        text-decoration: underline;
-        color:blue;
-    }
-
-</style>
