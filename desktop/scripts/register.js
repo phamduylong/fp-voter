@@ -77,7 +77,6 @@ window.addEventListener("load", () => {
                 else throw new Error("Internal Server Error!");
         }
     }).catch(async (err) => {
-        console.log(err);
         // prevent dialog spamming and empty dialogs
         if (errMsg.innerHTML !== err.message && err.message && err.message !== "") {
             errMsg.innerHTML = err.message;

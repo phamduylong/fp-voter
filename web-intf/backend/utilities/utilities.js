@@ -1,13 +1,43 @@
 const JWT = require('../models/JWT');
+const jwt = require('jsonwebtoken');
+const dotenv = require('dotenv');
 
 
+dotenv.config();
+const JWT_KEY = process.env.JWT_SECRET;
+
+const checkJwtExpiration = async (req, res, next) => {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (token) {
+        try {
+            const decodedToken = jwt.verify(token, JWT_KEY);
+            const matchToken = await checkInactiveToken(token);
+
+            if (matchToken === true) {
+                return res.status(401).json({ message: 'Token is inactive' });
+            }
+            else if (decodedToken.exp * 1000 < Date.now()) {
+                // Token has expired, send a 401 Unauthorized response
+                return res.status(401).json({message: 'Token has expired'});
+            }
+
+            // Token is still valid, continue with the request
+            req.user = decodedToken;
+            next();
+        } catch (err) {
+            return res.status(401).json({ message: 'Invalid token' });
+        }
+    } else {
+        return res.status(401).json({ message: 'Token not provided' });
+    }
+};
 async function deleteExpiredTokens() {
     const tokens = await JWT.find({});
-    for (let i = 0; i < tokens.length; i++) {
-        if (tokens[i].expiryTime  < Date.now()) {
-            await tokens[i].deleteOne({ _id: tokens[i]._id });
+    tokens.forEach(async (token) => {
+        if (token.expiryTime  < Date.now()) {
+            await JWT.deleteOne({ _id: tokens._id });
         }
-    }
+    });
 }
 async function checkInactiveToken(token) {
     await deleteExpiredTokens();
@@ -30,4 +60,4 @@ function checkUserValidations(username, password){
 
 }
 
-module.exports = {checkInactiveToken, checkUserValidations}
+module.exports = {checkJwtExpiration, checkUserValidations}
