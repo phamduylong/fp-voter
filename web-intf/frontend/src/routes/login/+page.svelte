@@ -25,6 +25,7 @@
             switch (res.status) {
                 case 200:
                     localStorage.setItem('jwt', response.token);
+                    sessionStorage.setItem('userId', response.userId); 
                     await goto('/home');
                     break;
                 
