@@ -1,4 +1,3 @@
-
 <script>
     import { goto } from "$app/navigation";
     import {alertState} from "$lib/alertStore.js";
@@ -69,6 +68,4 @@
             </a>
             <br><br>
     </div>
-
-
 </main>
