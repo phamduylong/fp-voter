@@ -6,6 +6,7 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 
 const routes = require("./routes/routes");
+const userRoutes = require("./routes/userRoutes");
 const compression = require("compression");
 
 
@@ -32,6 +33,7 @@ app.all('*', function (req, res, next) {
     next();
 });
 app.use("/", routes);
+app.use("/user", userRoutes);
 const PORT = process.env.PORT || 8080;
 
 async function connectToDB() {
