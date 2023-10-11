@@ -6,6 +6,7 @@ import board
 import busio
 from digitalio import DigitalInOut, Direction
 import adafruit_fingerprint
+import PySimpleGUI as sg
 
 led = DigitalInOut(board.D13)
 led.direction = Direction.OUTPUT
@@ -170,27 +171,35 @@ def get_num():
             pass
     return i
 
+###   This segment us the graphical UI settings #########
+sg.theme('DarkAmber')   # Add a touch of color
+# All the stuff inside your window.
+layout = [  [sg.Button('Enroll'), sg.Button('Find')],
+            [sg.Button('Delete'), sg.Button('Exit')] ]
+            
+# Create the Window
+window = sg.Window('fpv', layout )
+##########################################################
 
 while True:
-    print("----------------")
+	print("----------------")
     #if finger.read_templates() != adafruit_fingerprint.OK:
     #    raise RuntimeError("Failed to read templates")
     #print("Fingerprint templates:", finger.templates)
-    print("e) enroll print")
-    print("f) find print")
-    print("d) delete print")
-    print("----------------")
-    c = input("> ")
 
-    if c == "e":
-        enroll_finger(get_num())
-    if c == "f":
-        if get_fingerprint():
-            print("Detected #", finger.finger_id, "with confidence", finger.confidence)
-        else:
-            print("Finger not found")
-    if c == "d":
-        if finger.delete_model(get_num()) == adafruit_fingerprint.OK:
-            print("Deleted!")
-        else:
-            print("Failed to delete")
+	# Event Loop to process "events"
+	event, values = window.read()
+	if event == sg.WIN_CLOSED or event == 'Exit': # if user closes window or clicks cancel
+		break
+	if event == 'Enroll':
+		enroll_finger(get_num())
+	if event == 'Find':
+		if get_fingerprint():
+			print("Detected #", finger.finger_id, "with confidence", finger.confidence)
+		else:
+			print("Finger not found")
+	if event == 'Delete':
+		if finger.delete_model(get_num()) == adafruit_fingerprint.OK:
+			print("Deleted!")
+		else:
+			print("Failed to delete")
