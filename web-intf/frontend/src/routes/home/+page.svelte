@@ -1,5 +1,6 @@
 <script>
   import { goto } from "$app/navigation";
+  import { onMount } from "svelte";
   import {
     AppShell,
     ListBox,
@@ -8,6 +9,8 @@
   } from "@skeletonlabs/skeleton";
 
   $: token = typeof window !== "undefined" ? localStorage.getItem("jwt") : null;
+
+  let currentUser = "user";
 
   let comboboxValue = "";
 
@@ -18,16 +21,37 @@
     closeQuery: "",
   };
 
+  onMount(async () => {
+    const userId = sessionStorage.getItem("userId");
+    fetch(`http://localhost:8080/user/id=${userId}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`,
+      },
+    })
+      .then(async (res) => {
+        const response = await res.json();
+        if (res.status === 200) {
+          currentUser = response.username;
+        }
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+  });
+
   async function handleLogout() {
     await fetch("http://localhost:8080/logout", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
+        "Authorization": `Bearer ${token}`,
       },
     })
       .then(async (res) => {
-        if (res.status === 200) localStorage.removeItem("jwt");
+        if(res.ok) localStorage.removeItem("jwt");
+        sessionStorage.removeItem("userId");
         await goto("/login");
       })
       .catch((err) => {
@@ -47,7 +71,7 @@
         class="btn variant-filled absolute right-10 !bg-inherit hover:!bg-gray-800 !text-inherit border-2"
         use:popup={popupCombobox}
       >
-        Hello, username
+        Hello, {currentUser}
         <div class="card py-2" data-popup="popupCombobox">
           <ListBox>
             <ListBoxItem
