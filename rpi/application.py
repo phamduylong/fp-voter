@@ -1,12 +1,15 @@
 import time
-import board
+#import board
 import busio
 from digitalio import DigitalInOut, Direction
 import adafruit_fingerprint
-import PySimpleGUI as sg
 
-led = DigitalInOut(board.D13)
-led.direction = Direction.OUTPUT
+# Using TkInter for GUI
+import tkinter as tk
+from tkinter import *
+
+#led = DigitalInOut(board.D13)
+#led.direction = Direction.OUTPUT
 
 # uart = busio.UART(board.TX, board.RX, baudrate=57600)
 
@@ -19,7 +22,14 @@ import serial
 # uart = serial.Serial("/dev/ttyS0", baudrate=57600, timeout=1)
 
 # finger = adafruit_fingerprint.Adafruit_Fingerprint(uart)
-##################################################
+##########################################################
+
+# Window for the application
+class Window(Frame):
+    def __init__(self, master=None):
+        Frame.__init__(self, master)
+        self.master = master
+##########################################################
 
 # Read fingerprint
 def get_fingerprint():
@@ -34,7 +44,7 @@ def get_fingerprint():
     if finger.finger_search() != adafruit_fingerprint.OK:
         return False
     return True
-##################################################
+##########################################################
 
 # pylint: disable=too-many-branches
 def get_fingerprint_detail():
@@ -51,7 +61,6 @@ def get_fingerprint_detail():
             print("Imaging error")
         else:
             print("Other error")
-        return False
 
     print("Templating...", end="")
     i = finger.image_2_tz(1)
@@ -66,7 +75,6 @@ def get_fingerprint_detail():
             print("Image invalid")
         else:
             print("Other error")
-        return False
 
     print("Searching...", end="")
     i = finger.finger_fast_search()
@@ -74,18 +82,18 @@ def get_fingerprint_detail():
     # This block needs to be refactored when it can be tested.
     if i == adafruit_fingerprint.OK:
         print("Found fingerprint!")
-        return True
     else:
         if i == adafruit_fingerprint.NOTFOUND:
             print("No match found")
         else:
             print("Other error")
-        return False
-##################################################
+    pass
+##########################################################
 
 # pylint: disable=too-many-statements
 # Enroll a fingerprint to the given storage location (1-162)
-def enroll_finger(location):
+def enroll_finger():
+    location = get_num()
     """Take a 2 finger images and template it, then store in 'location'"""
     for fingerimg in range(1, 3):
         if fingerimg == 1:
@@ -102,10 +110,8 @@ def enroll_finger(location):
                 print(".", end="")
             elif i == adafruit_fingerprint.IMAGEFAIL:
                 print("Imaging error")
-                return False
             else:
                 print("Other error")
-                return False
 
         print("Templating...", end="")
         i = finger.image_2_tz(fingerimg)
@@ -120,7 +126,6 @@ def enroll_finger(location):
                 print("Image invalid")
             else:
                 print("Other error")
-            return False
 
         if fingerimg == 1:
             print("Remove finger")
@@ -137,7 +142,6 @@ def enroll_finger(location):
             print("Prints did not match")
         else:
             print("Other error")
-        return False
 
     print("Storing model #%d..." % location, end="")
     i = finger.store_model(location)
@@ -150,10 +154,20 @@ def enroll_finger(location):
             print("Flash storage error")
         else:
             print("Other error")
-        return False
 
-    return True
-##################################################
+    pass
+##########################################################
+
+# Function to delete fingerprint in a location
+def delete_fingerprint():
+	if finger.delete_model(get_num()) == adafruit_fingerprint.OK:
+		print("Deleted!")
+	else:
+		print("Failed to delete")
+##########################################################
+
+def exit_application():
+    root.destroy()
 
 # Function to read a number from user
 def get_num():
@@ -165,38 +179,37 @@ def get_num():
         except ValueError:
             pass
     return i
-##################################################
-
-#   This segment us the graphical UI settings
-sg.theme('DarkAmber')   # Add a touch of color
-# All the stuff inside your window.
-layout = [  [sg.Button('Enroll'), sg.Button('Find')],
-            [sg.Button('Delete'), sg.Button('Exit')] ]
-# Create the Window
-window = sg.Window('fpv', layout )
 ##########################################################
 
-### Main Program block
-##########################################################
-while True:
-	print("----------------")
-    #if finger.read_templates() != adafruit_fingerprint.OK:
-    #    raise RuntimeError("Failed to read templates")
-    #print("Fingerprint templates:", finger.templates)
 
-	# Event Loop to process "events"
-	event, values = window.read()
-	if event == sg.WIN_CLOSED or event == 'Exit': # if user closes window or clicks cancel
-		break
-	if event == 'Enroll':
-		enroll_finger(get_num())
-	if event == 'Find':
-		if get_fingerprint():
-			print("Detected #", finger.finger_id, "with confidence", finger.confidence)
-		else:
-			print("Finger not found")
-	if event == 'Delete':
-		if finger.delete_model(get_num()) == adafruit_fingerprint.OK:
-			print("Deleted!")
-		else:
-			print("Failed to delete")
+
+
+
+##########################################################
+
+# Pack the buttons to display them in the window
+#read_button.pack(pady=10)
+#find_button.pack(pady=10)
+#delete_button.pack(pady=10)
+#exit_button.pack(pady=10)
+##########################################################
+
+
+# Create the main window
+root = tk.Tk()
+root.title("Fingerprint Application")
+
+# Create buttons
+read_button = tk.Button(root, text="Read fingerprint", command=enroll_finger)
+find_button = tk.Button(root, text="Find fingerprint", command=get_fingerprint_detail)
+delete_button = tk.Button(root, text="Delete fingerprint", command=delete_fingerprint)
+exit_button = tk.Button(root, text="Exit", command=exit_application)
+
+# Pack the buttons to display them in the window
+read_button.pack(pady=10)
+find_button.pack(pady=10)
+delete_button.pack(pady=10)
+exit_button.pack(pady=10)
+
+# Start the Tkinter main loop
+root.mainloop()
