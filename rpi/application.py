@@ -191,12 +191,6 @@ delete_button = tk.Button(root, text="Delete fingerprint", command=delete_finger
 exit_button = tk.Button(root, text="Exit", command=exit_application)
 
 # Pack the buttons to display them in the window
-#read_button.pack(pady=10)
-#find_button.pack(pady=10)
-#delete_button.pack(pady=10)
-#exit_button.pack(pady=10)
-
-# Pack the buttons to display them in the window
 read_button.pack(pady=10)
 find_button.pack(pady=10)
 delete_button.pack(pady=10)
