@@ -1,5 +1,5 @@
 import time
-#import board
+#import board  IMPORTANT: this is required for the RPi app to run -> Disable for testing in windows etc
 import busio
 from digitalio import DigitalInOut, Direction
 import adafruit_fingerprint
@@ -22,7 +22,6 @@ import serial
 # uart = serial.Serial("/dev/ttyS0", baudrate=57600, timeout=1)
 
 # finger = adafruit_fingerprint.Adafruit_Fingerprint(uart)
-##########################################################
 
 # Window for the application
 class Window(Frame):
@@ -181,20 +180,6 @@ def get_num():
     return i
 ##########################################################
 
-
-
-
-
-##########################################################
-
-# Pack the buttons to display them in the window
-#read_button.pack(pady=10)
-#find_button.pack(pady=10)
-#delete_button.pack(pady=10)
-#exit_button.pack(pady=10)
-##########################################################
-
-
 # Create the main window
 root = tk.Tk()
 root.title("Fingerprint Application")
@@ -204,6 +189,12 @@ read_button = tk.Button(root, text="Read fingerprint", command=enroll_finger)
 find_button = tk.Button(root, text="Find fingerprint", command=get_fingerprint_detail)
 delete_button = tk.Button(root, text="Delete fingerprint", command=delete_fingerprint)
 exit_button = tk.Button(root, text="Exit", command=exit_application)
+
+# Pack the buttons to display them in the window
+#read_button.pack(pady=10)
+#find_button.pack(pady=10)
+#delete_button.pack(pady=10)
+#exit_button.pack(pady=10)
 
 # Pack the buttons to display them in the window
 read_button.pack(pady=10)
