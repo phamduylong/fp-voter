@@ -1,6 +1,3 @@
-# SPDX-FileCopyrightText: 2021 ladyada for Adafruit Industries
-# SPDX-License-Identifier: MIT
-
 import time
 import board
 import busio
@@ -22,10 +19,9 @@ import serial
 # uart = serial.Serial("/dev/ttyS0", baudrate=57600, timeout=1)
 
 # finger = adafruit_fingerprint.Adafruit_Fingerprint(uart)
-
 ##################################################
 
-
+# Read fingerprint
 def get_fingerprint():
     """Get a finger print image, template it, and see if it matches!"""
     print("Waiting for image...")
@@ -38,7 +34,7 @@ def get_fingerprint():
     if finger.finger_search() != adafruit_fingerprint.OK:
         return False
     return True
-
+##################################################
 
 # pylint: disable=too-many-branches
 def get_fingerprint_detail():
@@ -85,9 +81,10 @@ def get_fingerprint_detail():
         else:
             print("Other error")
         return False
-
+##################################################
 
 # pylint: disable=too-many-statements
+# Enroll a fingerprint to the given storage location (1-162)
 def enroll_finger(location):
     """Take a 2 finger images and template it, then store in 'location'"""
     for fingerimg in range(1, 3):
@@ -156,11 +153,9 @@ def enroll_finger(location):
         return False
 
     return True
-
-
 ##################################################
 
-
+# Function to read a number from user
 def get_num():
     """Use input() to get a valid number from 1 to 127. Retry till success!"""
     i = 0
@@ -170,17 +165,19 @@ def get_num():
         except ValueError:
             pass
     return i
+##################################################
 
-###   This segment us the graphical UI settings #########
+#   This segment us the graphical UI settings
 sg.theme('DarkAmber')   # Add a touch of color
 # All the stuff inside your window.
 layout = [  [sg.Button('Enroll'), sg.Button('Find')],
             [sg.Button('Delete'), sg.Button('Exit')] ]
-            
 # Create the Window
 window = sg.Window('fpv', layout )
 ##########################################################
 
+### Main Program block
+##########################################################
 while True:
 	print("----------------")
     #if finger.read_templates() != adafruit_fingerprint.OK:
