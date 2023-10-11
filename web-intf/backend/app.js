@@ -47,5 +47,5 @@ async function connectToDB() {
   
 }
 connectToDB();
+module.exports = app.listen(PORT);
 
-app.listen(PORT);
