@@ -35,6 +35,7 @@
             switch (res.status) {
                 case 200:
                    await goto('/login');
+                   alertState.show("Registration successful!","success");
                    break;
                 default:
                     if(response.error){

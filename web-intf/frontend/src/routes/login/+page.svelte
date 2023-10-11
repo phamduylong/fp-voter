@@ -21,12 +21,13 @@
             },
             body: JSON.stringify(user),
         }).then(async (res) =>  {
-                const response = await res.json();
+            const response = await res.json();
             switch (res.status) {
                 case 200:
                     localStorage.setItem('jwt', response.token);
                     sessionStorage.setItem('userId', response.userId); 
                     await goto('/home');
+                    alertState.show("Login successful!","success");
                     break;
                 
                 // everything but 200 will be an error here    
@@ -38,7 +39,6 @@
                     }
                     break;
             }
-        
         }).catch(err => {
             alertState.show();
             console.error(err);

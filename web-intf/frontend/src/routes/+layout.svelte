@@ -23,14 +23,21 @@
 
 {#if $alertState.visible}
     {#if $alertState.type === "error"}
-        <aside class="alert variant-filled-error w-3/4 absolute top-[90%] left-1/2 -translate-x-1/2 -translate-y-1/2 h-auto">
+        <aside class="alert variant-filled-error w-3/4 absolute top-[95%] left-1/2 -translate-x-1/2 -translate-y-1/2 h-auto">
             <div class="alert-message">
                 {$alertState.message}
             </div>
             <div class="alert-actions"><button class="btn variant-filled font-bold" on:click={alertState.hide}>X</button></div>
         </aside>
         {:else if $alertState.type === "warning"}
-        <aside class="alert variant-filled-warning w-3/4 absolute top-[90%] left-1/2 -translate-x-1/2 -translate-y-1/2 h-auto">
+        <aside class="alert variant-filled-warning w-3/4 absolute top-[95%] left-1/2 -translate-x-1/2 -translate-y-1/2 h-auto">
+            <div class="alert-message">
+                {$alertState.message}
+            </div>
+            <div class="alert-actions"><button class="btn variant-filled font-bold" on:click={alertState.hide}>X</button></div>
+        </aside>
+        {:else if $alertState.type === "success"}
+        <aside class="alert variant-filled-primary w-3/4 absolute top-[95%] left-1/2 -translate-x-1/2 -translate-y-1/2 h-auto">
             <div class="alert-message">
                 {$alertState.message}
             </div>
