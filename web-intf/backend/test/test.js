@@ -30,7 +30,7 @@ describe('Testing /login endpoint', function(){
     })
     it('Login with number starts first in username', function(done){
         const user = {
-            username: "random User",
+            username: "3randomUser",
             password: process.env.PASSWORD
         }
         test.httpAgent(app)
@@ -66,7 +66,7 @@ describe('Testing /login endpoint', function(){
     })
 
     it('Login with password too short', function(done){
-        const randomUsername = Math.random().toString(36).slice(2, 10);
+        const randomUsername = "a" + Math.random().toString(36).slice(2, 10);
         const user = {
             username: randomUsername,
             password: "Abc123#"
@@ -79,11 +79,10 @@ describe('Testing /login endpoint', function(){
 
     })
     it('Login with password too long', function(done){
-        const randomUsername = Math.random().toString(36).slice(2, 10);
-        const randomPassword = Math.random().toString(36).slice(2, 25);
+        const randomUsername = "a" + Math.random().toString(36).slice(2, 10);
         const user = {
             username: randomUsername,
-            password: randomPassword
+            password: "randomUsernameabc#123def456"
         }
         test.httpAgent(app)
             .post('/login')
@@ -93,7 +92,7 @@ describe('Testing /login endpoint', function(){
 
     })
     it('Login with number in password missing', function(done){
-        const randomUsername = Math.random().toString(36).slice(2, 10);
+        const randomUsername = "a" + Math.random().toString(36).slice(2, 10);
         const user = {
             username: randomUsername,
             password: "Abc###abc"
@@ -106,7 +105,7 @@ describe('Testing /login endpoint', function(){
 
     })
     it('Login with special character in password missing', function(done){
-        const randomUsername = Math.random().toString(36).slice(2, 10);
+        const randomUsername = "a" + Math.random().toString(36).slice(2, 10);
         const user = {
             username: randomUsername,
             password: "Abcabc123"
@@ -119,7 +118,7 @@ describe('Testing /login endpoint', function(){
 
     })
     it('Login with capital letter in password missing', function(done){
-        const randomUsername = Math.random().toString(36).slice(2, 10);
+        const randomUsername = "a" + Math.random().toString(36).slice(2, 10);
         const user = {
             username: randomUsername,
             password: "abcabc123##"
@@ -225,7 +224,7 @@ describe('Testing /register endpoint', function(){
 
     })
     it('Register with password length too short', function(done){
-        const randomUsername = Math.random().toString(36).slice(2, 10);
+        const randomUsername = "a" + Math.random().toString(36).slice(2, 10);
         const user = {
             username: randomUsername,
             password: "Abc123#"
@@ -238,11 +237,10 @@ describe('Testing /register endpoint', function(){
 
     })
     it('Register with password length too long', function(done){
-        const randomUsername = Math.random().toString(36).slice(2, 10);
-        const randomPassword = Math.random().toString(36).slice(2, 25);
+        const randomUsername = "a" + Math.random().toString(36).slice(2, 10);
         const user = {
             username: randomUsername,
-            password: randomPassword
+            password: "randomUsernameabc#123def456"
         }
         test.httpAgent(app)
             .post('/register')
@@ -252,7 +250,7 @@ describe('Testing /register endpoint', function(){
 
     })
     it('Register with number in password missing', function(done){
-        const randomUsername = Math.random().toString(36).slice(2, 10);
+        const randomUsername = "a" + Math.random().toString(36).slice(2, 10);
         const user = {
             username: randomUsername,
             password: "Abc###abc"
@@ -265,7 +263,7 @@ describe('Testing /register endpoint', function(){
 
     })
     it('Register with special character in password missing', function(done){
-        const randomUsername = Math.random().toString(36).slice(2, 10);
+        const randomUsername = "a" + Math.random().toString(36).slice(2, 10);
         const user = {
             username: randomUsername,
             password: "Abcabc123"
@@ -278,7 +276,7 @@ describe('Testing /register endpoint', function(){
 
     })
     it('Register with capital letter in password missing', function(done){
-        const randomUsername = Math.random().toString(36).slice(2, 10);
+        const randomUsername = "a" + Math.random().toString(36).slice(2, 10);
         const user = {
             username: randomUsername,
             password: "abcabc123##"
