@@ -1,200 +1,52 @@
-import time
-#import board  IMPORTANT: this is required for the RPi app to run -> Disable for testing in windows etc
-import busio
-from digitalio import DigitalInOut, Direction
-import adafruit_fingerprint
-
-# Using TkInter for GUI
 import tkinter as tk
 from tkinter import *
+import requests
+import threading
 
-#led = DigitalInOut(board.D13)
-#led.direction = Direction.OUTPUT
-
-# uart = busio.UART(board.TX, board.RX, baudrate=57600)
-
-# If using with a computer such as Linux/RaspberryPi, Mac, Windows with USB/serial converter:
-#import serial
-#uart = serial.Serial("/dev/ttyUSB0", baudrate=57600, timeout=1)
-
-# If using with Linux/Raspberry Pi and hardware UART:
-import serial
-# uart = serial.Serial("/dev/ttyS0", baudrate=57600, timeout=1)
-
-# finger = adafruit_fingerprint.Adafruit_Fingerprint(uart)
-
-# Window for the application
-class Window(Frame):
-    def __init__(self, master=None):
-        Frame.__init__(self, master)
-        self.master = master
-##########################################################
-
-# Read fingerprint
-def get_fingerprint():
-    """Get a finger print image, template it, and see if it matches!"""
-    print("Waiting for image...")
-    while finger.get_image() != adafruit_fingerprint.OK:
-        pass
-    print("Templating...")
-    if finger.image_2_tz(1) != adafruit_fingerprint.OK:
-        return False
-    print("Searching...")
-    if finger.finger_search() != adafruit_fingerprint.OK:
-        return False
-    return True
-##########################################################
-
-# pylint: disable=too-many-branches
-def get_fingerprint_detail():
-    """Get a finger print image, template it, and see if it matches!
-    This time, print out each error instead of just returning on failure"""
-    print("Getting image...", end="")
-    i = finger.get_image()
-    if i == adafruit_fingerprint.OK:
-        print("Image taken")
+def attempt_login():
+    credentials = {"username": username.get(), "password": password.get()}
+    server_response = requests.post("http://localhost:8080/login", data=credentials)
+    if server_response.status_code == requests.codes.ok:
+        result_string.set("Logged in successfully")
+        result_message.config(fg="#0f0")
+        result_message.pack(pady=30)
+        t = threading.Timer(2.5, pop_result)
+        t.start()
     else:
-        if i == adafruit_fingerprint.NOFINGER:
-            print("No finger detected")
-        elif i == adafruit_fingerprint.IMAGEFAIL:
-            print("Imaging error")
-        else:
-            print("Other error")
+        server_error = server_response.json()["error"]
+        if server_error != "":
+            result_string.set(server_error)
+            result_message.config(fg="#f00")
+            result_message.pack(pady=30)
+            t = threading.Timer(2.5, pop_result)
+            t.start()
 
-    print("Templating...", end="")
-    i = finger.image_2_tz(1)
-    if i == adafruit_fingerprint.OK:
-        print("Templated")
-    else:
-        if i == adafruit_fingerprint.IMAGEMESS:
-            print("Image too messy")
-        elif i == adafruit_fingerprint.FEATUREFAIL:
-            print("Could not identify features")
-        elif i == adafruit_fingerprint.INVALIDIMAGE:
-            print("Image invalid")
-        else:
-            print("Other error")
-
-    print("Searching...", end="")
-    i = finger.finger_fast_search()
-    # pylint: disable=no-else-return
-    # This block needs to be refactored when it can be tested.
-    if i == adafruit_fingerprint.OK:
-        print("Found fingerprint!")
-    else:
-        if i == adafruit_fingerprint.NOTFOUND:
-            print("No match found")
-        else:
-            print("Other error")
-    pass
-##########################################################
-
-# pylint: disable=too-many-statements
-# Enroll a fingerprint to the given storage location (1-162)
-def enroll_finger():
-    location = get_num()
-    """Take a 2 finger images and template it, then store in 'location'"""
-    for fingerimg in range(1, 3):
-        if fingerimg == 1:
-            print("Place finger on sensor...", end="")
-        else:
-            print("Place same finger again...", end="")
-
-        while True:
-            i = finger.get_image()
-            if i == adafruit_fingerprint.OK:
-                print("Image taken")
-                break
-            if i == adafruit_fingerprint.NOFINGER:
-                print(".", end="")
-            elif i == adafruit_fingerprint.IMAGEFAIL:
-                print("Imaging error")
-            else:
-                print("Other error")
-
-        print("Templating...", end="")
-        i = finger.image_2_tz(fingerimg)
-        if i == adafruit_fingerprint.OK:
-            print("Templated")
-        else:
-            if i == adafruit_fingerprint.IMAGEMESS:
-                print("Image too messy")
-            elif i == adafruit_fingerprint.FEATUREFAIL:
-                print("Could not identify features")
-            elif i == adafruit_fingerprint.INVALIDIMAGE:
-                print("Image invalid")
-            else:
-                print("Other error")
-
-        if fingerimg == 1:
-            print("Remove finger")
-            time.sleep(1)
-            while i != adafruit_fingerprint.NOFINGER:
-                i = finger.get_image()
-
-    print("Creating model...", end="")
-    i = finger.create_model()
-    if i == adafruit_fingerprint.OK:
-        print("Created")
-    else:
-        if i == adafruit_fingerprint.ENROLLMISMATCH:
-            print("Prints did not match")
-        else:
-            print("Other error")
-
-    print("Storing model #%d..." % location, end="")
-    i = finger.store_model(location)
-    if i == adafruit_fingerprint.OK:
-        print("Stored")
-    else:
-        if i == adafruit_fingerprint.BADLOCATION:
-            print("Bad storage location")
-        elif i == adafruit_fingerprint.FLASHERR:
-            print("Flash storage error")
-        else:
-            print("Other error")
-
-    pass
-##########################################################
-
-# Function to delete fingerprint in a location
-def delete_fingerprint():
-	if finger.delete_model(get_num()) == adafruit_fingerprint.OK:
-		print("Deleted!")
-	else:
-		print("Failed to delete")
-##########################################################
-
+def pop_result():
+    hide(result_message)
+            
+def hide(element):
+    element.pack_forget()
+        
 def exit_application():
     root.destroy()
 
-# Function to read a number from user
-def get_num():
-    """Use input() to get a valid number from 1 to 127. Retry till success!"""
-    i = 0
-    while (i > 127) or (i < 1):
-        try:
-            i = int(input("Enter ID # from 1-127: "))
-        except ValueError:
-            pass
-    return i
-##########################################################
-
-# Create the main window
 root = tk.Tk()
+root.geometry("1600x900")
 root.title("Fingerprint Application")
 
-# Create buttons
-read_button = tk.Button(root, text="Read fingerprint", command=enroll_finger)
-find_button = tk.Button(root, text="Find fingerprint", command=get_fingerprint_detail)
-delete_button = tk.Button(root, text="Delete fingerprint", command=delete_fingerprint)
-exit_button = tk.Button(root, text="Exit", command=exit_application)
+username_label = tk.Label(root, text="Username")
+username = tk.Entry(root, width=20)
+password_label = tk.Label(root, text="Password")
+password = tk.Entry(root, show="*", width=20)
+submit_credentials_btn = tk.Button(root, text="Submit", height=1, width=8, command=attempt_login)
 
-# Pack the buttons to display them in the window
-read_button.pack(pady=10)
-find_button.pack(pady=10)
-delete_button.pack(pady=10)
-exit_button.pack(pady=10)
+result_string = StringVar()
+result_message = tk.Label(root, textvariable=result_string)
 
-# Start the Tkinter main loop
+username_label.pack(pady=10)
+username.pack(pady=5)
+password_label.pack(pady=10)
+password.pack(pady=5)
+submit_credentials_btn.pack(pady=30)
+
 root.mainloop()
