@@ -6,7 +6,6 @@ import adafruit_fingerprint
 
 # Using TkInter for GUI
 import tkinter as tk
-from tkinter import *
 
 #led = DigitalInOut(board.D13)
 #led.direction = Direction.OUTPUT
@@ -22,13 +21,6 @@ import serial
 # uart = serial.Serial("/dev/ttyS0", baudrate=57600, timeout=1)
 
 # finger = adafruit_fingerprint.Adafruit_Fingerprint(uart)
-
-# Window for the application
-class Window(Frame):
-    def __init__(self, master=None):
-        Frame.__init__(self, master)
-        self.master = master
-##########################################################
 
 # Read fingerprint
 def get_fingerprint():
