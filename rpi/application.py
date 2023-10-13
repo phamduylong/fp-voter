@@ -39,7 +39,7 @@ password_label = tk.Label(root, text="Password")
 password = tk.Entry(root, show="*", width=20)
 submit_credentials_btn = tk.Button(root, text="Submit", height=1, width=8, command=attempt_login)
 
-result_string = StringVar()
+result_string = tk.StringVar()
 result_message = tk.Label(root, textvariable=result_string)
 
 username_label.pack(pady=10)
