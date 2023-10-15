@@ -15,18 +15,18 @@
   "dependencies": {
     "bcrypt": "^5.1.1",
     "body-parser": "^1.20.2",
+    "chai": "^4.3.10",
+    "chai-http": "^4.4.0",
     "compression": "^1.7.4",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
-    "http": "^0.0.1-security",
     "jsonwebtoken": "^9.0.2",
     "lint": "^1.1.2",
     "mocha": "^10.2.0",
     "mongoose": "^7.5.2",
-    "nodemon": "^3.0.1",
-    "unit.js": "^2.1.1"
+    "nodemon": "^3.0.1"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^6.7.2",
