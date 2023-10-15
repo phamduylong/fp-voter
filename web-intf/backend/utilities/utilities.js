@@ -54,7 +54,7 @@ async function checkInactiveToken(token) {
 function checkUserValidations(username, password){
     const usernameRegex = new RegExp(/^(?![\d_])(?!.*[^\w-]).{4,20}$/);
     const isUsernameMatch = usernameRegex.test(username);
-    const passwordRegex = new RegExp(/^(?=.*[A-Za-z])(?=.*\d)(?=.*[@#$%^&+=!*_])([A-Za-z\d@#$%^&+=!*_]){8,20}$/);
+    const passwordRegex = new RegExp(/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@#$%^&+=!*_])([A-Za-z\d@#$%^&+=!*_]){8,20}$/);
     const isPwdMatch = passwordRegex.test(password);
     return (isUsernameMatch && isPwdMatch)
 
