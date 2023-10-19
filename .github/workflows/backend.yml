@@ -1,0 +1,89 @@
+name: Node.js CI
+
+on:
+  pull_request:
+    branches: 
+      - main
+      - develop
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+          working-directory: ./web-intf/backend/
+          
+    timeout-minutes: 5
+
+    strategy:
+      matrix:
+        node-version: [16.x, 18.x]
+
+    steps:
+      
+    - uses: actions/checkout@v3
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+        cache-dependency-path: './web-intf/backend/package-lock.json'
+
+    - name: Install Dependencies
+      run: npm ci
+    
+    - name: Build Project
+      run: npm run build --if-present &
+      env:
+        CI: true
+        MONGODB_URI: ${{ secrets.MONGODB_URI }}
+        PORT: ${{ secrets.PORT }}
+        JWT_SECRET: ${{ secrets.JWT_SECRET }}
+
+    # Kill process or we'll get a timeout error    
+    - name: Stop Server
+      env:
+        PORT: ${{ secrets.PORT }}
+      run: |
+        kill $(lsof -t -i:$PORT) || true
+
+  test:
+    needs: [build]
+
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+          working-directory: ./web-intf/backend/test
+
+    timeout-minutes: 5
+
+    strategy:
+      matrix:
+        node-version: [16.x, 18.x]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+        cache-dependency-path: './web-intf/backend/package-lock.json'
+
+    - name: Install Dependencies
+      run: npm ci
+
+    - name: Run Mocha Unit Tests
+      run: npm run test &
+      env:
+        CI: true
+        MONGODB_URI: ${{ secrets.MONGODB_URI }}
+        PORT: ${{ secrets.PORT }}
+        JWT_SECRET: ${{ secrets.JWT_SECRET }}
+
+    # Kill process again after testing    
+    - name: Stop Server
+      env:
+        PORT: ${{ secrets.PORT }}
+      run: |
+        kill $(lsof -t -i:$PORT) || true

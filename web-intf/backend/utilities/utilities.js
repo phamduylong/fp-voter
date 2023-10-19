@@ -2,33 +2,28 @@ const JWT = require('../models/JWT');
 const jwt = require('jsonwebtoken');
 const dotenv = require('dotenv');
 
-
 dotenv.config();
 const JWT_KEY = process.env.JWT_SECRET;
 
 const checkJwtExpiration = async (req, res, next) => {
     const token = req.headers.authorization?.split(' ')[1];
-    if (token) {
+    if (token !== "null" && token !== undefined) {
         try {
             const decodedToken = jwt.verify(token, JWT_KEY);
-            const matchToken = await checkInactiveToken(token);
-
-            if (matchToken === true) {
-                return res.status(401).json({ message: 'Token is inactive' });
+            const tokenIsInactive = await checkInactiveToken(token);
+            const currentTokenExpired = decodedToken.exp * 1000 < Date.now();
+            if (tokenIsInactive || currentTokenExpired) {
+                return res.status(401).json({ error: 'Session has expired. Please log in again.' });
             }
-            else if (decodedToken.exp * 1000 < Date.now()) {
-                // Token has expired, send a 401 Unauthorized response
-                return res.status(401).json({message: 'Token has expired'});
-            }
-
-            // Token is still valid, continue with the request
             req.user = decodedToken;
             next();
         } catch (err) {
-            return res.status(401).json({ message: 'Invalid token' });
+            // in theory, this should not happen for ordinary users
+            return res.status(401).json({ error: 'JWT malformed' });
         }
     } else {
-        return res.status(401).json({ message: 'Token not provided' });
+        //token was not provided, user not logged in.
+        return res.status(401).json({ error: 'You are not logged in.' });
     }
 };
 async function deleteExpiredTokens() {
@@ -57,7 +52,6 @@ function checkUserValidations(username, password){
     const passwordRegex = new RegExp(/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@#$%^&+=!*_])([A-Za-z\d@#$%^&+=!*_]){8,20}$/);
     const isPwdMatch = passwordRegex.test(password);
     return (isUsernameMatch && isPwdMatch)
-
 }
 
 module.exports = {checkJwtExpiration, checkUserValidations}
