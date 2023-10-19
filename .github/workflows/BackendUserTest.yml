@@ -9,6 +9,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+        working-directory: ./web-intf/backend
 
     strategy:
           matrix:
@@ -23,7 +25,11 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm --prefix ./web-intf/backend install
+        run: npm install
+        working-directory: ${{env.working-directory}}
+
+      - name: Go to test-folder
+        run: cd test
 
       - name: Run tests
-        run: npm --prefix ./web-intf/backend/test run test
+        run: npm run test
