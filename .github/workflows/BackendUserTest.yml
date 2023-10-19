@@ -23,7 +23,7 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm install --prefix ./web-intf/backend
+        run: npm --prefix ./web-intf/backend install
 
       - name: Run tests
-        run: npm run test --prefix ./web-intf/backend/test
+        run: npm --prefix ./web-intf/backend/test run test
