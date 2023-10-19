@@ -80,3 +80,10 @@ jobs:
         MONGODB_URI: ${{ secrets.MONGODB_URI }}
         PORT: ${{ secrets.PORT }}
         JWT_SECRET: ${{ secrets.JWT_SECRET }}
+
+    # Kill process again after testing    
+    - name: Stop Server
+      env:
+        PORT: ${{ secrets.PORT }}
+      run: |
+        kill $(lsof -t -i:$PORT) || true
