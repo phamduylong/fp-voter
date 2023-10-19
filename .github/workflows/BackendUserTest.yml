@@ -9,24 +9,25 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
+    defaults:
+        run:
+            working-directory: ./web-intf/backend/
     strategy:
           matrix:
             node-version: [14.x, 16.x, 18.x]
 
     steps:
-    
-      - name: Go to backend folder
-        run: cd ./web-intf/backend
       - uses: actions/checkout@v3
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
+          cache-dependency-path: './web-intf/backend/package-lock.json'
 
       - name: Install dependencies
         run: npm install
 
       - name: Run tests
+        working-directory: ./web-intf/backend/test
         run: npm run test
