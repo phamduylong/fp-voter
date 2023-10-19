@@ -74,7 +74,7 @@ jobs:
       run: npm ci
 
     - name: Run Mocha Unit Tests
-      run: npm run test
+      run: npm run test &
       env:
         CI: true
         MONGODB_URI: ${{ secrets.MONGODB_URI }}
