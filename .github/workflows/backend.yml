@@ -26,6 +26,7 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
+        cache-dependency-path: './web-intf/backend/package-lock.json'
 
     - name: Install Dependencies
       run: npm ci
@@ -53,6 +54,8 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
+        cache-dependency-path: './web-intf/backend/package-lock.json'
+        
     - name: Install Dependencies
       run: npm ci
 
