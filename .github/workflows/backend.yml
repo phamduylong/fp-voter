@@ -7,13 +7,31 @@ on:
       - develop
 
 jobs:
+  set_env_vars: 
+    runs-on: ubuntu-latest
+          
+    timeout-minutes: 1
+
+    strategy:
+      matrix:
+        node-version: [16.x, 18.x]
+
+    steps:
+    - name: Add environment variables
+      run: |
+        touch .env
+        echo MONGODB_URI=${{ secrets.MONGODB_URI }} >> .env
+        echo PORT=${{ secrets.PORT }} >> .env
+        echo JWT_SECRET=${{ secrets.JWT_SECRET }} >> .env
+
   build: 
+    needs: [set_env_vars]
     runs-on: ubuntu-latest
     defaults:
       run:
           working-directory: ./web-intf/backend/
           
-    timeout-minutes: 3
+    timeout-minutes: 5
 
     strategy:
       matrix:
