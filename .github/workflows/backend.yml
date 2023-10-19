@@ -75,3 +75,8 @@ jobs:
 
     - name: Run Mocha Unit Tests
       run: npm run test
+      env:
+        CI: true
+        MONGODB_URI: ${{ secrets.MONGODB_URI }}
+        PORT: ${{ secrets.PORT }}
+        JWT_SECRET: ${{ secrets.JWT_SECRET }}
