@@ -33,12 +33,19 @@ jobs:
       run: npm ci
     
     - name: Build Project
-      run: npm run build --if-present 
+      run: npm run build --if-present &
       env:
         CI: true
         MONGODB_URI: ${{ secrets.MONGODB_URI }}
         PORT: ${{ secrets.PORT }}
         JWT_SECRET: ${{ secrets.JWT_SECRET }}
+
+    # Kill process or we'll get a timeout error    
+    - name: Stop Server
+      env:
+        PORT: ${{ secrets.PORT }}
+      run: |
+        kill $(lsof -t -i:$PORT) || true
 
   test:
     needs: [build]
