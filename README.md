@@ -3,6 +3,15 @@
 ## Overview
 The Fingerprint Voting System is a secure and efficient biometric authentication-based solution designed for voting processes, ensuring the integrity and reliability of election results. This system leverages biometric sensor technology to authenticate voters using their unique fingerprints, mitigating issues related to invalid vote casting and ensuring a secure electoral process.
 
+## Quick Start
+**Application**
+Dependencies:
+  (On PC: install python & pip first)
+  1. pip install adafruit-circuitpython-fingerprint
+  2. pip install Adafruit-Blinka
+Running application:
+  1. python rpi/application.py
+
 ## Objective
 The primary objective of this project is to develop a robust fingerprint voting system that addresses the following goals:
 
