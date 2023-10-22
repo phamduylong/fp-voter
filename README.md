@@ -7,10 +7,10 @@ The Fingerprint Voting System is a secure and efficient biometric authentication
 **Application**
 Dependencies:
   (On PC: install python & pip first)
-  1. pip install adafruit-circuitpython-fingerprint
-  2. pip install Adafruit-Blinka
+  1. ```pip install adafruit-circuitpython-fingerprint```
+  2. ```pip install Adafruit-Blinka```
 Running application:
-  1. python rpi/application.py
+  1. ```python rpi/application.py```
 
 ## Objective
 The primary objective of this project is to develop a robust fingerprint voting system that addresses the following goals:
