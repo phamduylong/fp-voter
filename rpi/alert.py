@@ -1,21 +1,21 @@
 import threading
 from enum import Enum
  
-class Alert_Type(Enum):
+class AlertType(Enum):
     ERROR = "#f00"
     WARNING = "#ff0"
     SUCCESS = "#0f0"
     
-def show_alert(alert_type, msg, timeout, error_string_elem, error_msg_elem):
+def show_alert(type, msg, timeout, error_string_elem, error_msg_elem):
     error_string_elem.set(msg)
-    match alert_type:
-        case Alert_Type.ERROR:
-            error_msg_elem.config(fg=Alert_Type.ERROR.value)
-        case Alert_Type.WARNING:
-            error_msg_elem.config(fg=Alert_Type.WARNING.value)
-        case Alert_Type.SUCCESS:
-            error_msg_elem.config(fg=Alert_Type.SUCCESS.value)
-    error_msg_elem.pack(pady=30)
+    match type:
+        case AlertType.ERROR:
+            error_msg_elem.config(fg=AlertType.ERROR.value)
+        case AlertType.WARNING:
+            error_msg_elem.config(fg=AlertType.WARNING.value)
+        case AlertType.SUCCESS:
+            error_msg_elem.config(fg=AlertType.SUCCESS.value)
+    error_msg_elem.pack(pady=60)
     t = threading.Timer(timeout, pop_result, args=(error_msg_elem,))
     t.start()
 
