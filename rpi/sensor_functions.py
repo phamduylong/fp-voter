@@ -17,6 +17,15 @@ finger = adafruit_fingerprint.Adafruit_Fingerprint(uart)
 
 ##################################################
 
+def get_num():
+    """Use input() to get a valid number from 1 to 127. Retry till success!"""
+    i = 0
+    while (i > 127) or (i < 1):
+        try:
+            i = int(input("Enter ID # from 1-127: "))
+        except ValueError:
+            pass
+    return i
 
 def get_fingerprint():
     """Get a finger print image, template it, and see if it matches!"""
@@ -149,16 +158,5 @@ def enroll_finger():
         return False
 
     return True
-
-
-def get_num():
-    """Use input() to get a valid number from 1 to 127. Retry till success!"""
-    i = 0
-    while (i > 127) or (i < 1):
-        try:
-            i = int(input("Enter ID # from 1-127: "))
-        except ValueError:
-            pass
-    return i
 
 ##################################################
