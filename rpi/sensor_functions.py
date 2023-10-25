@@ -165,3 +165,7 @@ def enroll_finger():
 # Check sensor status: returns boolean true/false
 def check():
     return finger.check_module()
+
+# Soft reset for the sensor
+def reset():
+    finger.soft_reset()
