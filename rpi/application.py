@@ -1,6 +1,7 @@
 import tkinter as tk
 import requests
 import alert
+import sensor_functions
 
 def attempt_login():
     credentials = {"username": username.get(), "password": password.get()}

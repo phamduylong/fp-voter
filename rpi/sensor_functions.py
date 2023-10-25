@@ -80,7 +80,8 @@ def get_fingerprint_detail():
 
 
 # pylint: disable=too-many-statements
-def enroll_finger(location):
+def enroll_finger():
+    location = gen_num()
     """Take a 2 finger images and template it, then store in 'location'"""
     for fingerimg in range(1, 3):
         if fingerimg == 1:
