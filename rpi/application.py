@@ -35,13 +35,10 @@ submit_credentials_btn = tk.Button(root, text="Submit", height=1, width=8, comma
 result_string = tk.StringVar()
 result_message = tk.Label(root, textvariable=result_string, wraplength=400, justify="center", font="helvetica 14")
 
-#enroll_btn = tk.Button(root, text="Enroll fingerprint", height=1, width=8, command=enroll_finger)
-
 username_label.pack(pady=10)
 username.pack(pady=5)
 password_label.pack(pady=10)
 password.pack(pady=5)
 submit_credentials_btn.pack(pady=30)
-#enroll_btn.pack(pady=30)
 
 root.mainloop()
