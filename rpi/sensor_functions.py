@@ -15,6 +15,7 @@ uart = serial.Serial("/dev/ttyUSB0", baudrate=57600, timeout=1)
 
 finger = adafruit_fingerprint.Adafruit_Fingerprint(uart)
 
+#Fingerprint sensor API found at: https://docs.circuitpython.org/projects/fingerprint/en/latest/api.html
 ##################################################
 
 def get_num():
