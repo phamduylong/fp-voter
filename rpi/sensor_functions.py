@@ -164,6 +164,10 @@ def enroll_finger():
 # CUSTOM FUNCTIONS:
 
 # Check sensor status: returns boolean true/false
+'''
+Check function can be used in the application to make sure that the sensor is connected properly before attempting to use it
+If the check is unsuccesful an info display can show the user to connect the sensor to the device for example.
+'''
 def check():
     return finger.check_module()
 
