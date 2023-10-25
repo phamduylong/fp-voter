@@ -168,5 +168,9 @@ def check():
     return finger.check_module()
 
 # Soft reset for the sensor
+'''
+The soft reset sends the _SOFTRESET = const(0x3D) packet that the sensor must acknowledge receiving, otherwise a runtime error is raised.
+This functionality can be useful to resolve possible error states in the application going forward.
+'''
 def reset():
     finger.soft_reset()
