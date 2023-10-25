@@ -160,3 +160,8 @@ def enroll_finger():
     return True
 
 ##################################################
+# CUSTOM FUNCTIONS:
+
+# Check sensor status: returns boolean true/false
+def check():
+    return finger.check_module()
