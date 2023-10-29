@@ -10,7 +10,8 @@ def attempt_login(username, password):
         server_response = requests.post("http://localhost:8080/login", data=credentials)
         if server_response.status_code == requests.codes.ok:
             alert.show_alert(alert.AlertType.SUCCESS, "Logged in successfully", 2.5, result_string, result_message)
-            authenticate_fingerprint()
+            fingerprint_authentication_page()
+
         else:
             server_error = server_response.json()["error"]
             if server_error != "":
@@ -37,15 +38,20 @@ def attempt_register(username, password):
         alert.show_alert(alert.AlertType.ERROR, error, 5, result_string, result_message)
 
 
-# Function for fingerprint authentication
-def authenticate_fingerprint():
+# Display fingerprint authentication page
+def fingerprint_authentication_page():
     fingerprint_window = tk.Toplevel(root)
+    fingerprint_window.attributes('-fullscreen', True)
     fingerprint_window.title("Fingerprint Authentication")
-        
-    instruction_label = tk.Label(fingerprint_window, text="You need to authenticate yourself using your fingerprint!", font="helvetica 20 bold")
+    
+    authentication_card = tk.Frame(fingerprint_window, height=660, width=1320, bg="#fff", bd=2, relief="solid")
+    authentication_card.pack_propagate(0)
+    authentication_card.place(in_=fingerprint_window, anchor="c", relx=.5, rely=.5)
+    
+    instruction_label = tk.Label(authentication_card, text="You need to authenticate yourself using your fingerprint!", font="helvetica 20 bold", bg="#fff")
     instruction_label.pack(pady=50)
     
-    instruction_label = tk.Label(fingerprint_window, text="Place your finger on the scanner...", font="helvetica 15")
+    instruction_label = tk.Label(authentication_card, text="Place your finger on the scanner...", font="helvetica 15", bg="#fff")
     instruction_label.pack(pady=10)
     
     fingerprint_window.update_idletasks()   # Update the display
@@ -53,17 +59,16 @@ def authenticate_fingerprint():
     # Try max. 3 times
     for attempt in range(1, 4):
         if finger.get_fingerprint():
-            success_label = tk.Label(fingerprint_window, text="Authenticated successfully!", font="helvetica 20 bold")
+            success_label = tk.Label(authentication_card, text="Authenticated successfully!", font="helvetica 20 bold", bg="#fff", fg="green")
             success_label.pack(pady=50)
             break    
+        elif attempt < 3:
+            failure_label = tk.Label(authentication_card, text=f"Finger not found! Place your finger again... (Attempt {attempt + 1})", font="helvetica 15", bg="#fff")
+            failure_label.pack(pady=10)
+            fingerprint_window.update_idletasks()
         else:
-            if attempt < 3:
-                failure_label = tk.Label(fingerprint_window, text=f"Finger not found! Place your finger again... (Attempt {attempt + 1})", font="helvetica 15")
-                failure_label.pack(pady=10)
-                fingerprint_window.update_idletasks()
-            else:
-                warning_label = tk.Label(fingerprint_window, text="Fingerprint not found after 3 attempts. Contact election manager!", font="helvetica 20 bold")
-                warning_label.pack(pady=50)
+            warning_label = tk.Label(authentication_card, text="Fingerprint not found after 3 attempts. Please contact the election manager!", font="helvetica 20 bold", fg="red", bg="#fff")
+            warning_label.pack(pady=50)
 
 
 def exit_application():
