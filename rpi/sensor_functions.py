@@ -11,7 +11,7 @@ led.direction = Direction.OUTPUT
 
 # If using with a computer such as Linux/RaspberryPi, Mac, Windows with USB/serial converter:
 import serial
-uart = serial.Serial("/dev/ttyUSB1", baudrate=57600, timeout=1)
+uart = serial.Serial("/dev/ttyUSB0", baudrate=57600, timeout=1)
 
 finger = adafruit_fingerprint.Adafruit_Fingerprint(uart)
 

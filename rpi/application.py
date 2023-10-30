@@ -41,14 +41,18 @@ def attempt_register(username, password):
 # Display fingerprint authentication page
 def fingerprint_authentication_page():
     fingerprint_window = tk.Toplevel(root)
-    fingerprint_window.attributes('-fullscreen', True)
     fingerprint_window.title("Fingerprint Authentication")
+    
+    # Set window to fullscreen 
+    width = fingerprint_window.winfo_screenwidth()
+    height = fingerprint_window.winfo_screenheight()
+    fingerprint_window.geometry("%dx%d" % (width, height))
     
     authentication_card = tk.Frame(fingerprint_window, height=660, width=1320, bg="#fff", bd=2, relief="solid")
     authentication_card.pack_propagate(0)
     authentication_card.place(in_=fingerprint_window, anchor="c", relx=.5, rely=.5)
     
-    instruction_label = tk.Label(authentication_card, text="You need to authenticate yourself using your fingerprint!", font="helvetica 20 bold", bg="#fff")
+    instruction_label = tk.Label(authentication_card, text="Fingerprint Authentication", font="helvetica 20 bold", bg="#fff")
     instruction_label.pack(pady=50)
     
     instruction_label = tk.Label(authentication_card, text="Place your finger on the scanner...", font="helvetica 15", bg="#fff")
