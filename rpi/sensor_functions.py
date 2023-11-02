@@ -187,19 +187,21 @@ The compare templates sensor function operates on slots 1 & 2, so they are used 
 def search_location(location):
     # Load a template model to slot '1'
     finger.load_model(location,1)
-
+    print("Place finger to the sensor")
     # Take image from the sensor
-    i = finger.get_image()
-    if i == adafruit_fingerprint.OK:
-        print("Image taken")
-    else:
-        if i == adafruit_fingerprint.NOFINGER:
-            print("No finger detected")
-        elif i == adafruit_fingerprint.IMAGEFAIL:
-            print("Imaging error")
-        else:
-            print("Other error")
-        return False
+    while True:
+            i = finger.get_image()
+            if i == adafruit_fingerprint.OK:
+                print("Image taken")
+                break
+            if i == adafruit_fingerprint.NOFINGER:
+                print(".", end="")
+            elif i == adafruit_fingerprint.IMAGEFAIL:
+                print("Imaging error")
+                return False
+            else:
+                print("Other error")
+                return False
 
     # Template the image to validate with existing image
     print("Templating...", end="")
@@ -218,6 +220,8 @@ def search_location(location):
         return False
     
     if (finger.compare_templates() == adafruit_fingerprint.OK):
-        match_id = finger.finger_id
         confidence = finger.confidence
-        print("Found a confidence #%d" % confidence, " for ID #%d" % match_id, end="")
+        print("Found a confidence #%d" % confidence, end="")
+        return True
+    else:
+        return False
