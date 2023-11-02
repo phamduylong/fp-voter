@@ -220,8 +220,5 @@ def search_location(location):
         return False
     
     if (finger.compare_templates() == adafruit_fingerprint.OK):
-        confidence = finger.confidence
-        print("Found a confidence #%d" % confidence, end="")
         return True
-    else:
-        return False
+    return False
