@@ -178,3 +178,46 @@ This functionality can be useful to resolve possible error states in the applica
 '''
 def reset():
     finger.soft_reset()
+
+# Targeted search function
+'''
+Targeted search takes a location as a parameter and loads a model stored to that location. It then proceeds taking an image with the sensor, and templating it to another slot.
+The compare templates sensor function operates on slots 1 & 2, so they are used on this function. The stored location template is loaded on slot 1 and the taken image template on slot 2.
+'''
+def search_location(location):
+    # Load a template model to slot '1'
+    finger.load_model(location,1)
+
+    # Take image from the sensor
+    i = finger.get_image()
+    if i == adafruit_fingerprint.OK:
+        print("Image taken")
+    else:
+        if i == adafruit_fingerprint.NOFINGER:
+            print("No finger detected")
+        elif i == adafruit_fingerprint.IMAGEFAIL:
+            print("Imaging error")
+        else:
+            print("Other error")
+        return False
+
+    # Template the image to validate with existing image
+    print("Templating...", end="")
+    i = finger.image_2_tz(2)
+    if i == adafruit_fingerprint.OK:
+        print("Templated")
+    else:
+        if i == adafruit_fingerprint.IMAGEMESS:
+            print("Image too messy")
+        elif i == adafruit_fingerprint.FEATUREFAIL:
+            print("Could not identify features")
+        elif i == adafruit_fingerprint.INVALIDIMAGE:
+            print("Image invalid")
+        else:
+            print("Other error")
+        return False
+    
+    if (finger.compare_templates() == adafruit_fingerprint.OK):
+        match_id = finger.finger_id
+        confidence = finger.confidence
+        print("Found a confidence #%d" % confidence, " for ID #%d" % match_id, end="")
