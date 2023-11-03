@@ -16,8 +16,6 @@ def show_alert(type, msg, timeout, error_string_elem, error_msg_elem):
         case AlertType.SUCCESS:
             error_msg_elem.config(fg=AlertType.SUCCESS.value)
     error_msg_elem.pack(pady=60)
-    t = threading.Timer(timeout, pop_result, args=(error_msg_elem,))
-    t.start()
 
 def pop_result(element):
     hide(element)
