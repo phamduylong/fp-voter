@@ -1,7 +1,7 @@
 import tkinter as tk
 import requests
 import alert
-#import sensor_functions as finger
+import sensor_functions as finger
 import keyring as kr
 import subprocess
 
