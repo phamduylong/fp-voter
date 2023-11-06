@@ -13,6 +13,7 @@ def install_python_dbus():
             print("python-dbus installed successfully")
     except subprocess.CalledProcessError as error:
         print(f"Installation failed with an error: {error}")
+        alert.show_alert(alert.AlertType.ERROR, error, 5, result_string, result_message)
         
 # Install python-dbus if not installed
 try:
