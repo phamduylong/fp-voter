@@ -1,9 +1,25 @@
 import tkinter as tk
 import requests
 import alert
-import sensor_functions as finger
+#import sensor_functions as finger
 import keyring as kr
+import subprocess
 
+def install_python_dbus():
+    command = "sudo apt-get install python3-dbus"
+    try:
+        result = subprocess.run(command, shell=True, check=True)
+        if result.returncode == 0:
+            print("python-dbus installed successfully")
+    except subprocess.CalledProcessError as error:
+        print(f"Installation failed with an error: {error}")
+        
+# Install python-dbus if not installed
+try:
+    import dbus
+except ImportError:
+    install_python_dbus()
+    
 def attempt_login(username, password):
     credentials = {"username": username, "password": password}
     server_response = None
