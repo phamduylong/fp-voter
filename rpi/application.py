@@ -16,7 +16,7 @@ def attempt_login(username, password):
             jwt_token = server_response.json().get("token")
             
             # Store the JWT token
-            kr.set_password("fp-voter_token", "jwt_token", jwt_token)
+            kr.set_password("fp-voter", "jwt_token", jwt_token)
             
             fingerprint_authentication_page()
         else:
@@ -46,7 +46,7 @@ def attempt_register(username, password):
 
 # Retrieve the stored JWT token
 def get_jwt_token():
-    return kr.get_password("fp-voter_token", "jwt_token")
+    return kr.get_password("fp-voter", "jwt_token")
     
 
 # Display fingerprint authentication page
