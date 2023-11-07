@@ -1,6 +1,7 @@
 import tkinter as tk
 import requests
 import alert
+import page as page
 import sensor_functions as finger
 
 def attempt_login(username, password):
@@ -76,11 +77,8 @@ def fingerprint_authentication_page():
 def exit_application():
     root.destroy()
 
-root = tk.Tk()
-root.attributes('-fullscreen', True)
-root.title("Fingerprint Application")
 
-login_card = tk.Frame(root, height=660, width=1320, bg="#fff", bd=2, relief="solid")
+'''login_card = tk.Frame(root, height=660, width=1320, bg="#fff", bd=2, relief="solid")
 login_label = tk.Label(login_card, text="Login", bg="#fff", font="helvetica 20 bold")
 username_label = tk.Label(login_card, bg="#fff", text="Username")
 username_input = tk.Entry(login_card, width=20, bg="#fff", bd=1, relief="solid")
@@ -101,4 +99,10 @@ submit_credentials_btn.pack(pady=30)
 register_label.pack(pady=10)
 login_card.pack_propagate(0)
 login_card.place(in_=root, anchor="c", relx=.5, rely=.5)
+root.mainloop()'''
+
+root = tk.Tk()
+main = page.MainView(root)
+main.pack(side="top", fill="both", expand=True)
+root.wm_geometry("400x400")
 root.mainloop()
