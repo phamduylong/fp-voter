@@ -2,7 +2,25 @@ import tkinter as tk
 import requests
 import alert
 import sensor_functions as finger
+import keyring as kr
+import subprocess
 
+def install_python_dbus():
+    command = "sudo apt-get install python3-dbus"
+    try:
+        result = subprocess.run(command, shell=True, check=True)
+        if result.returncode == 0:
+            print("python-dbus installed successfully")
+    except subprocess.CalledProcessError as error:
+        print(f"Installation failed with an error: {error}")
+        alert.show_alert(alert.AlertType.ERROR, error, 5, result_string, result_message)
+        
+# Install python-dbus if not installed
+try:
+    import dbus
+except ImportError:
+    install_python_dbus()
+    
 def attempt_login(username, password):
     credentials = {"username": username, "password": password}
     server_response = None
@@ -10,6 +28,13 @@ def attempt_login(username, password):
         server_response = requests.post("https://fingerprint-voter-server.onrender.com/login", data=credentials)
         if server_response.status_code == requests.codes.ok:
             alert.show_alert(alert.AlertType.SUCCESS, "Logged in successfully", 2.5, result_string, result_message)
+
+            # Get the JWT token from the server
+            jwt_token = server_response.json().get("token")
+            
+            # Store the JWT token
+            kr.set_password("fp-voter", "jwt_token", jwt_token)
+            
             fingerprint_authentication_page()
         else:
             server_error = server_response.json()["error"]
@@ -36,6 +61,10 @@ def attempt_register(username, password):
         print("An error occured: ", error)
         alert.show_alert(alert.AlertType.ERROR, error, 5, result_string, result_message)
 
+# Retrieve the stored JWT token
+def get_jwt_token():
+    return kr.get_password("fp-voter", "jwt_token")
+    
 
 # Display fingerprint authentication page
 def fingerprint_authentication_page():
