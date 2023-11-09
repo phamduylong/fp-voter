@@ -220,5 +220,6 @@ def search_location(location):
         return False
     
     if (finger.compare_templates() == adafruit_fingerprint.OK):
+        print("Fingerprint matched! Welcome.")
         return True
     return False
