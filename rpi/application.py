@@ -2,7 +2,17 @@ import tkinter as tk
 import requests
 import alert
 import page as page
-import sensor_functions as finger
+#import sensor_functions as finger
+
+def get_num():
+    """Use input() to get a valid number from 1 to 127. Retry till success!"""
+    i = 0
+    while (i > 127) or (i < 1):
+        try:
+            i = int(input("Enter ID # from 1-127: "))
+        except ValueError:
+            pass
+    return i
 
 def attempt_login(username, password):
     credentials = {"username": username, "password": password}
@@ -64,7 +74,8 @@ def fingerprint_authentication_page():
     fingerprint_window.update_idletasks()   # Update the display
 
     for attempt in range(1, 4):   
-        if finger.get_fingerprint():
+        if get_num() > 1:
+        #if finger.get_fingerprint():
             alert.show_alert(alert.AlertType.SUCCESS, "Authenticated successfully!", 2.5, fingerprint_auth_result_string, fingerprint_auth_result_message)
             break
         elif attempt < 3:               # Fingerprint not found, try again (max. 2 retries)
@@ -77,29 +88,6 @@ def fingerprint_authentication_page():
 def exit_application():
     root.destroy()
 
-
-'''login_card = tk.Frame(root, height=660, width=1320, bg="#fff", bd=2, relief="solid")
-login_label = tk.Label(login_card, text="Login", bg="#fff", font="helvetica 20 bold")
-username_label = tk.Label(login_card, bg="#fff", text="Username")
-username_input = tk.Entry(login_card, width=20, bg="#fff", bd=1, relief="solid")
-password_label = tk.Label(login_card, bg="#fff", text="Password")
-password_input = tk.Entry(login_card, show="*", width=20, bg="#fff", bd=1, relief="solid")
-submit_credentials_btn = tk.Button(login_card, text="Submit", height=1, width=8, command=lambda: attempt_login(username_input.get(), password_input.get()))
-# TODO: Implement register functionality
-register_label = tk.Label(login_card, text="Don't have an account? Click here to register.", bg="#fff", font="helvetica 12 underline")
-result_string = tk.StringVar(value="")
-result_message = tk.Label(login_card, textvariable=result_string, wraplength=500, justify="center", bg="#fff", font="helvetica 14")
-
-login_label.pack(pady=50)
-username_label.pack(pady=10)
-username_input.pack(pady=5)
-password_label.pack(pady=10)
-password_input.pack(pady=5)
-submit_credentials_btn.pack(pady=30)
-register_label.pack(pady=10)
-login_card.pack_propagate(0)
-login_card.place(in_=root, anchor="c", relx=.5, rely=.5)
-root.mainloop()'''
 
 root = tk.Tk()
 main = page.MainView(root)

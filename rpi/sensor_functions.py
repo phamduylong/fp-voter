@@ -1,19 +1,19 @@
 import time
-import board
+#import board
 import busio
 from digitalio import DigitalInOut, Direction
 import adafruit_fingerprint
 
-led = DigitalInOut(board.D13)
-led.direction = Direction.OUTPUT
+#led = DigitalInOut(board.D13)
+#led.direction = Direction.OUTPUT
 
 # uart = busio.UART(board.TX, board.RX, baudrate=57600)
 
 # If using with a computer such as Linux/RaspberryPi, Mac, Windows with USB/serial converter:
 import serial
-uart = serial.Serial("/dev/ttyUSB0", baudrate=57600, timeout=1)
+#uart = serial.Serial("/dev/ttyUSB0", baudrate=57600, timeout=1)
 
-finger = adafruit_fingerprint.Adafruit_Fingerprint(uart)
+#finger = adafruit_fingerprint.Adafruit_Fingerprint(uart)
 
 #Fingerprint sensor API found at: https://docs.circuitpython.org/projects/fingerprint/en/latest/api.html
 ##################################################
@@ -29,17 +29,17 @@ def get_num():
     return i
 
 def get_fingerprint():
-    """Get a finger print image, template it, and see if it matches!"""
-    print("Waiting for image...")
-    while finger.get_image() != adafruit_fingerprint.OK:
-        pass
-    print("Templating...")
-    if finger.image_2_tz(1) != adafruit_fingerprint.OK:
-        return False
-    print("Searching...")
-    if finger.finger_search() != adafruit_fingerprint.OK:
-        return False
-    return True
+#    """Get a finger print image, template it, and see if it matches!"""
+#    print("Waiting for image...")
+#    while finger.get_image() != adafruit_fingerprint.OK:
+#        pass
+#    print("Templating...")
+#    if finger.image_2_tz(1) != adafruit_fingerprint.OK:
+#        return False
+#    print("Searching...")
+#    if finger.finger_search() != adafruit_fingerprint.OK:
+#        return False
+#    return True
 
 
 # pylint: disable=too-many-branches
