@@ -58,7 +58,7 @@ class LoginPage(Page):
 		password_label = tk.Label(self, bg="#fff", text="Password")
 		password_input = tk.Entry(self, show="*", width=20, bg="#fff", bd=1, relief="solid")
 		submit_credentials_btn = tk.Button(self, text="Submit", height=1, width=8, command=lambda: attempt_login(username_input.get(), password_input.get()))
-		register_user_btn = tk.Button(self, text="Don't have an account? Click here to register.", bg="#fff", font="helvetica 12 underline", command=lambda: attempt_login(username_input.get(), password_input.get()))
+		register_user_btn = tk.Button(self, text="Don't have an account? Click here to register.", bg="#fff", font="helvetica 12 underline", command=lambda: self.p2.show)
 		result_string = tk.StringVar(value="")
 		result_message = tk.Label(self, textvariable=result_string, wraplength=500, justify="center", bg="#fff", font="helvetica 14")
 
@@ -72,8 +72,20 @@ class LoginPage(Page):
 class RegisterPage(Page):
 	def __init__(self, *args, **kwargs):
 		Page.__init__(self, *args, **kwargs)
-		label = tk.Label(self, text="Register page")
+		label = tk.Label(self, text="Register page", font="helvetica 20 bold", bg="#fff")
 		label.pack(side="top", fill="both", expand=True)
+
+		username_label = tk.Label(self, bg="#fff", text="Username")
+		username_input = tk.Entry(self, width=20, bg="#fff", bd=1, relief="solid")
+		password_label = tk.Label(self, bg="#fff", text="Password")
+		password_input = tk.Entry(self, show="*", width=20, bg="#fff", bd=1, relief="solid")
+		register_user_btn = tk.Button(self, text="Register", height=1, width=8, command=lambda: attempt_login(username_input.get(), password_input.get()))
+
+		username_label.pack(pady=10)
+		username_input.pack(pady=5)
+		password_label.pack(pady=10)
+		password_input.pack(pady=5)
+		register_user_btn.pack(pady=10)
 
 class VotePage(Page):
 	def __init__(self, *args, **kwargs):

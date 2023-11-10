@@ -14,39 +14,6 @@ def get_num():
             pass
     return i
 
-def attempt_login(username, password):
-    credentials = {"username": username, "password": password}
-    server_response = None
-    try:
-        server_response = requests.post("https://fingerprint-voter-server.onrender.com/login", data=credentials)
-        if server_response.status_code == requests.codes.ok:
-            alert.show_alert(alert.AlertType.SUCCESS, "Logged in successfully", 2.5, result_string, result_message)
-            fingerprint_authentication_page()
-        else:
-            server_error = server_response.json()["error"]
-            if server_error != "":
-                print("An error occured: ", server_error)
-                alert.show_alert(alert.AlertType.ERROR, server_error, 2.5, result_string, result_message)
-    except Exception as error:
-        print("An error occured: ", error)
-        alert.show_alert(alert.AlertType.ERROR, error, 5, result_string, result_message)
-        
-def attempt_register(username, password):
-    credentials = {"username": username, "password": password}
-    server_response = None
-    try:
-        server_response = requests.post("http://fingerprint-voter-server.onrender.com/register", data=credentials)
-        if server_response.status_code == requests.codes.ok:
-            alert.show_alert(alert.AlertType.SUCCESS, "Registered successfully", 2.5, result_string, result_message)
-        else:
-            server_error = server_response.json()["error"]
-            if server_error != "":
-                print("An error occured: ", server_error)
-                alert.show_alert(alert.AlertType.ERROR, server_error, 2.5, result_string, result_message)
-    except Exception as error:
-        print("An error occured: ", error)
-        alert.show_alert(alert.AlertType.ERROR, error, 5, result_string, result_message)
-
 
 # Display fingerprint authentication page
 def fingerprint_authentication_page():
