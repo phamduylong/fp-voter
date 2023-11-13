@@ -120,17 +120,62 @@ class VotePage(Page):
     def __init__(self, *args, **kwargs):
         Page.__init__(self, *args, **kwargs)
 
-        title_label = tk.Label(self, text="Fingerprint Authentication", font="helvetica 20 bold", bg="#fff")
-        title_label.pack(side="top", fill="both", expand=True)
+        self.title_label = tk.Label(self, text="Fingerprint Authentication", font="helvetica 20 bold", bg="#fff")
+        self.title_label.pack(side="top", fill="both", expand=True)
 
-        fingerprint_auth_result_string = tk.StringVar(value="")
-        fingerprint_auth_result_message = tk.Label(self, textvariable=fingerprint_auth_result_string, justify="center", bg="#fff", font="helvetica 15")
+        self.fingerprint_auth_result_string = tk.StringVar(value="")
+        self.fingerprint_auth_result_message = tk.Label(self, textvariable=self.fingerprint_auth_result_string, justify="center", bg="#fff", font="helvetica 15")
+        self.fingerprint_auth_result_message.pack(side="top", fill="both", expand=True)
 
-        instruction_label = tk.Label(self, text="Place your finger on the scanner...", font="helvetica 15", bg="#fff")
-        instruction_label.pack(side="top", fill="both", expand=True)
+        self.instruction_label = tk.Label(self, text="Place your finger on the scanner...", font="helvetica 15", bg="#fff")
+        self.instruction_label.pack(side="top", fill="both", expand=True)
 
-        btn = tk.Button(self, text="Search", command=lambda: print('''finger.search_location(1)'''))
-        btn.pack(side="top", fill="both", expand=True)
+        self.btn = tk.Button(self, text="Search", command=self.authenticate_fingerprint)
+        self.btn.pack(side="top", fill="both", expand=True)
+
+        # Additional components for vote options
+        self.vote_buttons_frame = tk.Frame(self)
+        self.vote_buttons_frame.pack(side="top", fill="both", expand=True)
+
+    def authenticate_fingerprint(self):
+        # Add your fingerprint authentication logic here
+        #fingerprint_auth_result = finger.search_location(1)  # Replace this with your actual fingerprint authentication logic
+
+        # TEMP TEST BELOW
+        fingerprint_auth_result = "success"
+
+        if fingerprint_auth_result == "success":
+            self.fingerprint_auth_result_string.set("Fingerprint Authentication Successful")
+            self.show_vote_options()
+        else:
+            self.fingerprint_auth_result_string.set("Fingerprint Authentication Failed")
+
+    def show_vote_options(self):
+        # Clear existing components
+        self.title_label.pack_forget()
+        self.fingerprint_auth_result_message.pack_forget()
+        self.instruction_label.pack_forget()
+        self.btn.pack_forget()
+
+        # Show vote options
+        self.title_label.config(text="Cast your vote!", font="helvetica 20 bold")
+        self.title_label.pack(side="top", fill="both", expand=True)
+
+        # Vote option buttons
+        vote_button_1 = tk.Button(self.vote_buttons_frame, text="Joe Biden", command=lambda: self.cast_vote(1))
+        vote_button_2 = tk.Button(self.vote_buttons_frame, text="Kendrick Lamar", command=lambda: self.cast_vote(2))
+        vote_button_3 = tk.Button(self.vote_buttons_frame, text="Beyoncé", command=lambda: self.cast_vote(3))
+
+        vote_button_1.pack(side="top", fill="both", expand=True)
+        vote_button_2.pack(side="top", fill="both", expand=True)
+        vote_button_3.pack(side="top", fill="both", expand=True)
+
+    def cast_vote(self, candidate):
+        # Add your logic for vote casting here
+        # For example, you can display a success message
+        self.fingerprint_auth_result_string.set(f"Vote for Candidate {candidate} cast successfully!")
+        # You can add further logic as needed after a successful vote
+
         
 class LoginPage(Page):
     def __init__(self, main_view, *args, **kwargs):
