@@ -238,16 +238,6 @@ class LoginPage(Page):
 		self.password_input.pack(pady=5)
 		self.submit_credentials_btn.pack(pady=30)
 		self.register_user_btn.pack(pady=10)
-    
-	def user_not_found(self):
-		# Clear existing components
-		self.title_label.pack_forget()
-		self.username_label.pack_forget()
-		self.username_input.pack_forget()
-		self.password_label.pack_forget()
-		self.password_input.pack_forget()
-		self.register_user_btn.pack_forget()
-		self.submit_credentials_btn.pack_forget()
         
 class GreetingPage(Page):
     def __init__(self, *args, **kwargs):
