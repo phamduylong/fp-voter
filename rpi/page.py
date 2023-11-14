@@ -1,23 +1,33 @@
 import tkinter as tk 
-#import sensor_functions as finger
+import requests
+import sensor_functions as finger
 import alert
 
-def attempt_login(username, password):
+def get_num():
+    """Use input() to get a valid number from 1 to 127. Retry till success!"""
+    i = 0
+    while (i > 127) or (i < 1):
+        try:
+            i = int(input("Enter ID # from 1-127: "))
+        except ValueError:
+            pass
+    return i
+
+def attempt_login(self, username, password):
     credentials = {"username": username, "password": password}
     server_response = None
     try:
         server_response = requests.post("https://fingerprint-voter-server.onrender.com/login", data=credentials)
         if server_response.status_code == requests.codes.ok:
-            alert.show_alert(alert.AlertType.SUCCESS, "Logged in successfully", 2.5, result_string, result_message)
-            fingerprint_authentication_page()
+            alert.show_alert(alert.AlertType.SUCCESS, "Logged in successfully", 2.5, self.result_string, self.result_message)
         else:
             server_error = server_response.json()["error"]
             if server_error != "":
                 print("An error occured: ", server_error)
-                alert.show_alert(alert.AlertType.ERROR, server_error, 2.5, result_string, result_message)
+                alert.show_alert(alert.AlertType.ERROR, server_error, 2.5, self.result_string, self.result_message)
     except Exception as error:
         print("An error occured: ", error)
-        alert.show_alert(alert.AlertType.ERROR, error, 5, result_string, result_message)
+        alert.show_alert(alert.AlertType.ERROR, error, 5, self.result_string, self.result_message)
         
 def attempt_register(username, password):
     credentials = {"username": username, "password": password}
@@ -137,10 +147,24 @@ class VotePage(Page):
         self.vote_buttons_frame = tk.Frame(self)
         self.vote_buttons_frame.pack(side="top", fill="both", expand=True)
 
+        # Vote option buttons
+        self.vote_button_1 = tk.Button(self.vote_buttons_frame, text="Joe Biden", command=lambda: self.cast_vote(1))
+        self.vote_button_2 = tk.Button(self.vote_buttons_frame, text="Kendrick Lamar", command=lambda: self.cast_vote(2))
+        self.vote_button_3 = tk.Button(self.vote_buttons_frame, text="Beyoncé", command=lambda: self.cast_vote(3))
+
     def authenticate_fingerprint(self):
         # Add your fingerprint authentication logic here
         #fingerprint_auth_result = finger.search_location(1)  # Replace this with your actual fingerprint authentication logic
-
+        for attempt in range(1, 4):   
+            if get_num() > 1:
+                if finger.get_fingerprint():
+                    alert.show_alert(alert.AlertType.SUCCESS, "Authenticated successfully!", 2.5, self.fingerprint_auth_result_string, self.fingerprint_auth_result_message)
+                    break
+                elif attempt < 3:               # Fingerprint not found, try again (max. 2 retries)
+                    alert.show_alert(alert.AlertType.ERROR, f"Finger not found! Place your finger again... (Attempt {attempt + 1})", 10, self.fingerprint_auth_result_string, self.fingerprint_auth_result_message)
+            else:
+                alert.show_alert(alert.AlertType.ERROR, "Fingerprint not found after 3 attempts. Please contact the election manager!", 10, self.fingerprint_auth_result_string, self.fingerprint_auth_result_message)
+                self.user_not_found()
         # TEMP TEST BELOW
         fingerprint_auth_result = "success"
 
@@ -161,45 +185,61 @@ class VotePage(Page):
         self.title_label.config(text="Cast your vote!", font="helvetica 20 bold")
         self.title_label.pack(side="top", fill="both", expand=True)
 
-        # Vote option buttons
-        vote_button_1 = tk.Button(self.vote_buttons_frame, text="Joe Biden", command=lambda: self.cast_vote(1))
-        vote_button_2 = tk.Button(self.vote_buttons_frame, text="Kendrick Lamar", command=lambda: self.cast_vote(2))
-        vote_button_3 = tk.Button(self.vote_buttons_frame, text="Beyoncé", command=lambda: self.cast_vote(3))
-
-        vote_button_1.pack(side="top", fill="both", expand=True)
-        vote_button_2.pack(side="top", fill="both", expand=True)
-        vote_button_3.pack(side="top", fill="both", expand=True)
+        self.vote_button_1.pack(side="top", fill="both", expand=True)
+        self.vote_button_2.pack(side="top", fill="both", expand=True)
+        self.vote_button_3.pack(side="top", fill="both", expand=True)
 
     def cast_vote(self, candidate):
-        # Add your logic for vote casting here
-        # For example, you can display a success message
+        # TO-DO: logic for vote casting here
         self.fingerprint_auth_result_string.set(f"Vote for Candidate {candidate} cast successfully!")
-        # You can add further logic as needed after a successful vote
+        self.farewell_message()
+
+    def farewell_message(self):
+        # Clear existing components
+        self.title_label.pack_forget()
+        self.fingerprint_auth_result_message.pack_forget()
+        self.instruction_label.pack_forget()
+        self.vote_button_1.pack_forget()
+        self.vote_button_2.pack_forget()
+        self.vote_button_3.pack_forget()
+        # Show farewell msg
+        self.title_label.config(text="Thank you for voting!", font="helvetica 20 bold")
+        self.title_label.pack(side="top", fill="both", expand=True)
 
         
 class LoginPage(Page):
     def __init__(self, main_view, *args, **kwargs):
         Page.__init__(self, *args, **kwargs)
         self.main_view = main_view  # Store a reference to the MainView instance
-        title_label = tk.Label(self, text="Login to system", font="helvetica 20 bold", bg="#fff")
-        title_label.pack(side="top", fill="both", expand=True)
+        self.title_label = tk.Label(self, text="Login to system", font="helvetica 20 bold", bg="#fff")
+        self.title_label.pack(side="top", fill="both", expand=True)
 
-        username_label = tk.Label(self, bg="#fff", text="Username")
-        username_input = tk.Entry(self, width=20, bg="#fff", bd=1, relief="solid")
-        password_label = tk.Label(self, bg="#fff", text="Password")
-        password_input = tk.Entry(self, show="*", width=20, bg="#fff", bd=1, relief="solid")
-        submit_credentials_btn = tk.Button(self, text="Submit", height=1, width=8, command=lambda: attempt_login(username_input.get(), password_input.get()))
-        register_user_btn = tk.Button(self, text="Don't have an account? Click here to register.", bg="#fff", font="helvetica 12 underline", command=lambda: self.main_view.show_register_page())
+        self.username_label = tk.Label(self, bg="#fff", text="Username")
+        self.username_input = tk.Entry(self, width=20, bg="#fff", bd=1, relief="solid")
+        self.password_label = tk.Label(self, bg="#fff", text="Password")
+        self.password_input = tk.Entry(self, show="*", width=20, bg="#fff", bd=1, relief="solid")
+        self.submit_credentials_btn = tk.Button(self, text="Submit", height=1, width=8, command=lambda: attempt_login(self.username_input.get(), self.password_input.get()))
+        self.register_user_btn = tk.Button(self, text="Don't have an account? Click here to register.", bg="#fff", font="helvetica 12 underline", command=lambda: self.main_view.show_register_page())
 
-        result_string = tk.StringVar(value="")
-        result_message = tk.Label(self, textvariable=result_string, wraplength=500, justify="center", bg="#fff", font="helvetica 14")
+        self.result_string = tk.StringVar(value="")
+        self.result_message = tk.Label(self, textvariable=self.result_string, wraplength=500, justify="center", bg="#fff", font="helvetica 14")
 
-        username_label.pack(pady=10)
-        username_input.pack(pady=5)
-        password_label.pack(pady=10)
-        password_input.pack(pady=5)
-        submit_credentials_btn.pack(pady=30)
-        register_user_btn.pack(pady=10)
+        self.username_label.pack(pady=10)
+        self.username_input.pack(pady=5)
+        self.password_label.pack(pady=10)
+        self.password_input.pack(pady=5)
+        self.submit_credentials_btn.pack(pady=30)
+        self.register_user_btn.pack(pady=10)
+    
+    def user_not_found(self):
+        # Clear existing components
+        self.title_label.pack_forget()
+        self.username_label.pack_forget()
+        self.username_input.pack_forget()
+        self.password_label.pack_forget()
+        self.password_input.pack_forget()
+        self.register_user_btn.pack_forget()
+        self.submit_credentials_btn.pack_forget()
         
 class GreetingPage(Page):
     def __init__(self, *args, **kwargs):
