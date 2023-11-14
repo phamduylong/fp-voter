@@ -1,8 +1,8 @@
 import tkinter as tk
-import page as page
 import requests
 import alert
 import sensor_functions as finger
+import page as page
 import keyring as kr
 import subprocess
 
@@ -21,10 +21,51 @@ try:
     import dbus
 except ImportError:
     install_python_dbus()
+    
+def attempt_login(username, password):
+    credentials = {"username": username, "password": password}
+    server_response = None
+    try:
+        server_response = requests.post("https://fingerprint-voter-server.onrender.com/login", data=credentials)
+        if server_response.status_code == requests.codes.ok:
+            alert.show_alert(alert.AlertType.SUCCESS, "Logged in successfully", 2.5, result_string, result_message)
+
+            # Get the JWT token from the server
+            jwt_token = server_response.json().get("token")
+            
+            # Store the JWT token
+            kr.set_password("fp-voter", "jwt_token", jwt_token)
+            
+            fingerprint_authentication_page()
+        else:
+            server_error = server_response.json()["error"]
+            if server_error != "":
+                print("An error occured: ", server_error)
+                alert.show_alert(alert.AlertType.ERROR, server_error, 2.5, result_string, result_message)
+    except Exception as error:
+        print("An error occured: ", error)
+        alert.show_alert(alert.AlertType.ERROR, error, 5, result_string, result_message)
+        
+def attempt_register(username, password):
+    credentials = {"username": username, "password": password}
+    server_response = None
+    try:
+        server_response = requests.post("http://fingerprint-voter-server.onrender.com/register", data=credentials)
+        if server_response.status_code == requests.codes.ok:
+            alert.show_alert(alert.AlertType.SUCCESS, "Registered successfully", 2.5, result_string, result_message)
+        else:
+            server_error = server_response.json()["error"]
+            if server_error != "":
+                print("An error occured: ", server_error)
+                alert.show_alert(alert.AlertType.ERROR, server_error, 2.5, result_string, result_message)
+    except Exception as error:
+        print("An error occured: ", error)
+        alert.show_alert(alert.AlertType.ERROR, error, 5, result_string, result_message)
 
 # Retrieve the stored JWT token
 def get_jwt_token():
-    return kr.get_password("fp-voter", "jwt_token") 
+    return kr.get_password("fp-voter", "jwt_token")
+    
 
 # Display fingerprint authentication page
 def fingerprint_authentication_page():
@@ -61,10 +102,14 @@ def fingerprint_authentication_page():
         else:
             alert.show_alert(alert.AlertType.ERROR, "Fingerprint not found after 3 attempts. Please contact the election manager!", 10, fingerprint_auth_result_string, fingerprint_auth_result_message)
 
+
 def exit_application():
     root.destroy()
 
 root = tk.Tk()
+root.attributes('-fullscreen', True)
+root.title("Fingerprint Application")
+
 main = page.MainView(root)
 main.pack(side="top", fill="both", expand=True)
 root.wm_geometry("400x400")
