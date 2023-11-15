@@ -228,7 +228,7 @@ class LoginPage(Page):
 		self.username_input = tk.Entry(self, width=20, bg="#fff", bd=1, relief="solid")
 		self.password_label = tk.Label(self, bg="#fff", text="Password")
 		self.password_input = tk.Entry(self, show="*", width=20, bg="#fff", bd=1, relief="solid")
-		self.submit_credentials_btn = tk.Button(self, text="Submit", height=1, width=8, command=lambda: attempt_login(self.username_input.get(), self.password_input.get()))
+		self.submit_credentials_btn = tk.Button(self, text="Submit", height=1, width=8, command=lambda: attempt_login(self, self.username_input.get(), self.password_input.get()))
 		self.register_user_btn = tk.Button(self, text="Don't have an account? Click here to register.", bg="#fff", font="helvetica 12 underline", command=lambda: self.main_view.show_register_page())
 		self.result_string = tk.StringVar(value="")
 		self.result_message = tk.Label(self, textvariable=self.result_string, wraplength=500, justify="center", bg="#fff", font="helvetica 14")
