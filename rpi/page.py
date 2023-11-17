@@ -31,28 +31,6 @@ def get_num():
             pass
     return i
 
-def attempt_login(self, username, password):
-    credentials = {"username": username, "password": password}
-    server_response = None
-    try:
-        server_response = requests.post("https://fingerprint-voter-server.onrender.com/login", data=credentials)
-        if server_response.status_code == requests.codes.ok:
-            alert.show_alert(alert.AlertType.SUCCESS, "Logged in successfully", 2.5, self.result_string, self.result_message)
-	    
-	    # Get the JWT token from the server
-            jwt_token = server_response.json().get("token")
-
-	    # Store the JWT token
-            kr.set_password("fp-voter", "jwt_token", jwt_token)
-        else:
-            server_error = server_response.json()["error"]
-            if server_error != "":
-                print("An error occured: ", server_error)
-                alert.show_alert(alert.AlertType.ERROR, server_error, 2.5, self.result_string, self.result_message)
-    except Exception as error:
-        print("An error occured: ", error)
-        alert.show_alert(alert.AlertType.ERROR, error, 5, self.result_string, self.result_message)
-
 
 # Retrieve the stored JWT token
 def get_jwt_token():
@@ -91,16 +69,16 @@ class MainView(tk.Frame):
 
         b1 = tk.Button(buttonframe, text="Login", command=self.show_login_page)
         b2 = tk.Button(buttonframe, text="Register", command=self.show_register_page)
-        b3 = tk.Button(buttonframe, text="Vote", command=self.show_vote_page)
+        #b3 = tk.Button(buttonframe, text="Vote", command=self.show_vote_page)
 
         b1.pack(side="left")
         b2.pack(side="left")
-        b3.pack(side="left")
+        #b3.pack(side="left")
 
         self.p0.pack(fill="both", expand=True)
         self.p1.pack(fill="both", expand=True)
         self.p2.pack(fill="both", expand=True)
-        self.p3.pack(fill="both", expand=True)
+        #self.p3.pack(fill="both", expand=True)
 
         self.show_greeting_page()
 
@@ -162,8 +140,8 @@ class VotePage(Page):
 		self.title_label = tk.Label(self, text="Fingerprint Authentication", font="helvetica 20 bold", bg="#fff")
 		self.title_label.pack(side="top", fill="both", expand=True)
 		self.fingerprint_auth_result_string = tk.StringVar(value="")
-		self.fingerprint_auth_result_message = tk.Label(self, textvariable=self.fingerprint_auth_result_string, justify="center", bg="#fff", font="helvetica 15")
-		self.fingerprint_auth_result_message.pack(side="top", fill="both", expand=True)
+		self.fingerprint_auth_result_message = tk.Label(self, textvariable=self.fingerprint_auth_result_string, wraplength=500, justify="center", bg="#fff", font="helvetica 14")
+		#self.fingerprint_auth_result_message.pack(side="top", fill="both", expand=True)
 		self.instruction_label = tk.Label(self, text="Place your finger on the scanner...", font="helvetica 15", bg="#fff")
 		self.instruction_label.pack(side="top", fill="both", expand=True)
 		self.btn = tk.Button(self, text="Search", command=self.authenticate_fingerprint)
@@ -268,6 +246,30 @@ class LoginPage(Page):
 		self.password_input.pack(pady=5)
 		self.submit_credentials_btn.pack(pady=30)
 		self.register_user_btn.pack(pady=10)
+		
+		def attempt_login(self, username, password):
+			credentials = {"username": username, "password": password}
+			server_response = None
+			try:
+				server_response = requests.post("https://fingerprint-voter-server.onrender.com/login", data=credentials)
+				if server_response.status_code == requests.codes.ok:
+					alert.show_alert(alert.AlertType.SUCCESS, "Logged in successfully", 2.5, self.result_string, self.result_message)
+				
+				# Get the JWT token from the server
+					jwt_token = server_response.json().get("token")
+
+				# Store the JWT token
+					kr.set_password("fp-voter", "jwt_token", jwt_token)
+					
+					self.main_view.show_vote_page()
+				else:
+					server_error = server_response.json()["error"]
+					if server_error != "":
+						print("An error occured: ", server_error)
+						alert.show_alert(alert.AlertType.ERROR, server_error, 2.5, self.result_string, self.result_message)
+			except Exception as error:
+				print("An error occured: ", error)
+				alert.show_alert(alert.AlertType.ERROR, error, 5, self.result_string, self.result_message)
         
 class GreetingPage(Page):
     def __init__(self, *args, **kwargs):
