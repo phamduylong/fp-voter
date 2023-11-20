@@ -157,19 +157,34 @@ class RegisterPage(Page):
 			return None
 
 		def enroll_fingerprint(self):
-			print("enroll_fingerprtin called")
+			# Get an empty location on the sensor's flash
 			empty_location = get_empty_location(self)
-			print(empty_location)
-
-			self.instruction_label = tk.Label(self, text="Place your finger on the scanner...", font="helvetica 15", bg="#fff")
-			self.instruction_label.pack(pady=10)
+			
+			# Prompt the user to capture the finger image for the first time
+			self.first_img_instruction_label = tk.Label(self, text="Place your finger on the scanner...", font="helvetica 15", bg="#fff")
+			self.first_img_instruction_label.pack(pady=10)
 
 			self.update_idletasks()
-
-			if finger.enroll_finger(empty_location, self.enrollment_result_string,  self.enrollment_result_message):
-				alert.show_alert(alert.AlertType.SUCCESS, "Enrolled successfully!", 2.5, self.enrollment_result_string, self.enrollment_result_message)
+			
+			# Capture finger image for the first time
+			if finger.capture_img(1):
+				# if successful, prompt the user to capture the finger image for the second time
+				self.second_img_instruction_label = tk.Label(self, text="Place the same finger again...", font="helvetica 15", bg="#fff")
+				self.second_img_instruction_label.pack(pady=10)
 			else:
-				alert.show_alert(alert.AlertType.ERROR, "Error while enrolling", 10, self.enrollment_result_string, self.enrollment_result_message)
+				alert.show_alert(alert.AlertType.ERROR, "Error while capturing finger image", 5, self.enrollment_result_string, self.enrollment_result_message)
+			
+			self.update_idletasks()
+			
+			# Capture finger image for the second time
+			if finger.capture_img(2):
+				# If successful, store the image in an empty location on the flash
+				if finger.store_finger(empty_location):
+					alert.show_alert(alert.AlertType.SUCCESS, "Enrolled successfully!", 2.5, self.enrollment_result_string, self.enrollment_result_message)
+				else:
+					alert.show_alert(alert.AlertType.ERROR, "Error while storing the fingerprint", 5, self.enrollment_result_string, self.enrollment_result_message)
+			else:
+				alert.show_alert(alert.AlertType.ERROR, "Error while capturing finger image", 5, self.enrollment_result_string, self.enrollment_result_message)
 
 
 			

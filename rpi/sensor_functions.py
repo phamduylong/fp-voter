@@ -90,11 +90,9 @@ def get_fingerprint_detail():
             print("Other error")
         return False
 
-
 # pylint: disable=too-many-statements
-def enroll_finger(location, res_str, res_msg):
+def enroll_finger(location):
     """Take a 2 finger images and template it, then store in 'location'"""
-    alert.show_alert(alert.AlertType.ERROR, "Enrolled successfully!", 10, res_str, res_msg)
 
     for fingerimg in range(1, 3):
         if fingerimg == 1:
@@ -162,9 +160,80 @@ def enroll_finger(location, res_str, res_msg):
         return False
 
     return True
+
         
 ##################################################
 # CUSTOM FUNCTIONS:
+
+def capture_img(img_nr):
+    """Take the finger img"""
+    while True:
+        i = finger.get_image()
+        if i == adafruit_fingerprint.OK:
+            print("Image taken")
+            break
+        if i == adafruit_fingerprint.NOFINGER:
+            print(".", end="")
+        elif i == adafruit_fingerprint.IMAGEFAIL:
+            print("Imaging error")
+            return False
+        else:
+            print("Other error")
+            return False
+            
+    """Template the finger img"""
+    print("Templating...", end="")
+    i = finger.image_2_tz(img_nr)
+    if i == adafruit_fingerprint.OK:
+        print("Templated")
+    else:
+        if i == adafruit_fingerprint.IMAGEMESS:
+            print("Image too messy")
+        elif i == adafruit_fingerprint.FEATUREFAIL:
+            print("Could not identify features")
+        elif i == adafruit_fingerprint.INVALIDIMAGE:
+            print("Image invalid")
+        else:
+            print("Other error")
+        return False
+
+    if img_nr == 1:
+        print("Remove finger")
+        time.sleep(1)
+        while i != adafruit_fingerprint.NOFINGER:
+            i = finger.get_image()
+    
+    return True
+
+
+def store_finger(location):
+    """Store fingerprint img in location"""
+    print("Creating model...", end="")
+    i = finger.create_model()
+    if i == adafruit_fingerprint.OK:
+        print("Created")
+    else:
+        if i == adafruit_fingerprint.ENROLLMISMATCH:
+            print("Prints did not match")
+        else:
+            print("Other error")
+        return False
+
+    print("Storing model #%d..." % location, end="")
+    i = finger.store_model(location)
+    if i == adafruit_fingerprint.OK:
+        print("Stored")
+    else:
+        if i == adafruit_fingerprint.BADLOCATION:
+            print("Bad storage location")
+        elif i == adafruit_fingerprint.FLASHERR:
+            print("Flash storage error")
+        else:
+            print("Other error")
+        return False
+
+    return True
+
 
 def read_templates() -> int:
     """Requests the sensor to list of all template locations in use and
