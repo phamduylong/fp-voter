@@ -36,23 +36,6 @@ def get_num():
 def get_jwt_token():
     return kr.get_password("fp-voter", "jwt_token")
     
-    
-def attempt_register(username, password):
-    credentials = {"username": username, "password": password}
-    server_response = None
-    try:
-        server_response = requests.post("http://fingerprint-voter-server.onrender.com/register", data=credentials)
-        if server_response.status_code == requests.codes.ok:
-            alert.show_alert(alert.AlertType.SUCCESS, "Registered successfully", 2.5, result_string, result_message)
-        else:
-            server_error = server_response.json()["error"]
-            if server_error != "":
-                print("An error occured: ", server_error)
-                alert.show_alert(alert.AlertType.ERROR, server_error, 2.5, result_string, result_message)
-    except Exception as error:
-        print("An error occured: ", error)
-        alert.show_alert(alert.AlertType.ERROR, error, 5, result_string, result_message)
-
 
 class MainView(tk.Frame):
     def __init__(self, *args, **kwargs):
@@ -116,23 +99,81 @@ class Page(tk.Frame):
 
 
 class RegisterPage(Page):
-    def __init__(self, *args, **kwargs):
-        Page.__init__(self, *args, **kwargs)
-        label = tk.Label(self, text="Register page", font="helvetica 20 bold", bg="#fff")
-        label.pack(side="top", fill="both", expand=True)
+	def __init__(self, main_view, *args, **kwargs):
+		Page.__init__(self, *args, **kwargs)
+		self.main_view = main_view  # Store a reference to the MainView instance
+		self.label = tk.Label(self, text="Register page", font="helvetica 20 bold", bg="#fff")
+		self.label.pack(side="top", fill="both", expand=True)
 
-        username_label = tk.Label(self, bg="#fff", text="Username")
-        username_input = tk.Entry(self, width=20, bg="#fff", bd=1, relief="solid")
-        password_label = tk.Label(self, bg="#fff", text="Password")
-        password_input = tk.Entry(self, show="*", width=20, bg="#fff", bd=1, relief="solid")
-        register_user_btn = tk.Button(self, text="Register", height=1, width=8,
-                                      command=lambda: attempt_register(username_input.get(), password_input.get()))
+		self.username_label = tk.Label(self, bg="#fff", text="Username")
+		self.username_input = tk.Entry(self, width=20, bg="#fff", bd=1, relief="solid")
+		self.password_label = tk.Label(self, bg="#fff", text="Password")
+		self.password_input = tk.Entry(self, show="*", width=20, bg="#fff", bd=1, relief="solid")
+		
+		self.result_string = tk.StringVar(value="")
+		self.result_message = tk.Label(self, textvariable=self.result_string, wraplength=500, justify="center", bg="#fff", font="helvetica 14")
+		
+		self.register_user_btn = tk.Button(self, text="Register", height=1, width=8, command=lambda: attempt_register(self, self.username_input.get(), self.password_input.get()))
+		
+		self.enrollment_result_string = tk.StringVar(value="")
+		self.enrollment_result_message = tk.Label(self, textvariable=self.enrollment_result_string, wraplength=500, justify="center", bg="#fff", font="helvetica 14")
 
-        username_label.pack(pady=10)
-        username_input.pack(pady=5)
-        password_label.pack(pady=10)
-        password_input.pack(pady=5)
-        register_user_btn.pack(pady=10)
+		self.fingerprint_enrollment_btn = tk.Button(self, text="Fingerprint Enrollment", height=1, width=8, command=lambda: enroll_fingerprint(self))
+		
+		self.username_label.pack(pady=10)
+		self.username_input.pack(pady=5)
+		self.password_label.pack(pady=10)
+		self.password_input.pack(pady=5)
+		self.fingerprint_enrollment_btn.pack(pady=10)
+		self.register_user_btn.pack(pady=10)
+		
+		def attempt_register(self, username, password):
+			credentials = {"username": username, "password": password}
+			server_response = None
+			try:
+				server_response = requests.post("http://fingerprint-voter-server.onrender.com/register", data=credentials)
+				if server_response.status_code == requests.codes.ok:
+				    alert.show_alert(alert.AlertType.SUCCESS, "Registered successfully", 2.5, self.result_string, self.result_message)
+				else:
+					server_error = server_response.json()["error"]
+					if server_error != "":
+						print("An error occured: ", server_error)
+						alert.show_alert(alert.AlertType.ERROR, server_error, 2.5, self.result_string, self.result_message)
+			except Exception as error:
+				print("An error occured: ", error)
+				alert.show_alert(alert.AlertType.ERROR, error, 5, self.result_string, self.result_message)
+		
+		def get_empty_location(self):
+			min_location = 1
+			max_location = 127
+			locations = finger.read_templates()
+			
+			locations_set = set(locations)
+			
+			for value in range(min_location, max_location + 1):
+				if value not in locations_set:
+					return value
+
+			return None
+
+		def enroll_fingerprint(self):
+			print("enroll_fingerprtin called")
+			empty_location = get_empty_location(self)
+			print(empty_location)
+
+			self.instruction_label = tk.Label(self, text="Place your finger on the scanner...", font="helvetica 15", bg="#fff")
+			self.instruction_label.pack(pady=10)
+
+			self.update_idletasks()
+
+			if finger.enroll_finger(empty_location, self.enrollment_result_string,  self.enrollment_result_message):
+				alert.show_alert(alert.AlertType.SUCCESS, "Enrolled successfully!", 2.5, self.enrollment_result_string, self.enrollment_result_message)
+			else:
+				alert.show_alert(alert.AlertType.ERROR, "Error while enrolling", 10, self.enrollment_result_string, self.enrollment_result_message)
+
+
+			
+    
         
 class VotePage(Page):
 	def __init__(self, *args, **kwargs):
@@ -248,7 +289,7 @@ class LoginPage(Page):
 		self.register_user_btn.pack(pady=10)
 		
 		def attempt_login(self, username, password):
-			credentials = {"username": username, "password": password}
+			credentials = {"username": username, "password": password, "fingerprintID": 1, "sensorID": 1}
 			server_response = None
 			try:
 				server_response = requests.post("https://fingerprint-voter-server.onrender.com/login", data=credentials)

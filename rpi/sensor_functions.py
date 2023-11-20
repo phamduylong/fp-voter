@@ -2,6 +2,11 @@ import time
 import board
 from digitalio import DigitalInOut, Direction
 import adafruit_fingerprint
+from micropython import const
+import alert
+
+_TEMPLATEREAD = const(0x1F)
+
 
 led = DigitalInOut(board.D13)
 led.direction = Direction.OUTPUT
@@ -87,9 +92,10 @@ def get_fingerprint_detail():
 
 
 # pylint: disable=too-many-statements
-def enroll_finger():
-    location = get_num()
+def enroll_finger(location, res_str, res_msg):
     """Take a 2 finger images and template it, then store in 'location'"""
+    alert.show_alert(alert.AlertType.ERROR, "Enrolled successfully!", 10, res_str, res_msg)
+
     for fingerimg in range(1, 3):
         if fingerimg == 1:
             print("Place finger on sensor...", end="")
@@ -156,9 +162,35 @@ def enroll_finger():
         return False
 
     return True
-
+        
 ##################################################
 # CUSTOM FUNCTIONS:
+
+def read_templates() -> int:
+    """Requests the sensor to list of all template locations in use and
+    stores them in self.templates. Returns the packet error code or
+    OK success"""
+    from math import ceil  # pylint: disable=import-outside-toplevel
+
+    finger.templates = []
+    finger.read_sysparam()
+    temp_r = [
+        0x0C,
+    ]
+    for j in range(ceil(finger.library_size / 256)):
+        finger._send_packet([_TEMPLATEREAD, j])
+        r = finger._get_packet(44)
+        if r[0] == adafruit_fingerprint.OK:
+            for i in range(32):
+                byte = r[i + 1]
+                for bit in range(8):
+                    if byte & (1 << bit):
+                        finger.templates.append((i * 8) + bit + (j * 256))
+            temp_r = r
+        else:
+            r = temp_r
+    return finger.templates
+
 
 # Check sensor status: returns boolean true/false
 '''
