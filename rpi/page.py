@@ -113,12 +113,12 @@ class RegisterPage(Page):
 		self.result_string = tk.StringVar(value="")
 		self.result_message = tk.Label(self, textvariable=self.result_string, wraplength=500, justify="center", bg="#fff", font="helvetica 14")
 		
-		self.register_user_btn = tk.Button(self, text="Register", height=1, width=8, command=lambda: attempt_register(self, self.username_input.get(), self.password_input.get()))
+		self.register_user_btn = tk.Button(self, text="Register", height=1, width=8, command=lambda: attempt_register(self, self.username_input.get(), self.password_input.get(), self.fingerprintId))
 		
 		self.enrollment_result_string = tk.StringVar(value="")
 		self.enrollment_result_message = tk.Label(self, textvariable=self.enrollment_result_string, wraplength=500, justify="center", bg="#fff", font="helvetica 14")
 
-		self.fingerprint_enrollment_btn = tk.Button(self, text="Fingerprint Enrollment", height=1, width=8, command=lambda: enroll_fingerprint(self))
+		self.fingerprint_enrollment_btn = tk.Button(self, text="Enroll Fingerprint", height=1, width=16, command=lambda: enroll_fingerprint(self))
 		
 		self.username_label.pack(pady=10)
 		self.username_input.pack(pady=5)
@@ -127,8 +127,8 @@ class RegisterPage(Page):
 		self.fingerprint_enrollment_btn.pack(pady=10)
 		self.register_user_btn.pack(pady=10)
 		
-		def attempt_register(self, username, password):
-			credentials = {"username": username, "password": password}
+		def attempt_register(self, username, password, fingerprintId):
+			credentials = {"username": username, "password": password, "fingerprintId": fingerprintId, "sensorId": 1}
 			server_response = None
 			try:
 				server_response = requests.post("http://fingerprint-voter-server.onrender.com/register", data=credentials)
@@ -150,6 +150,7 @@ class RegisterPage(Page):
 			
 			locations_set = set(locations)
 			
+			# Find the value not in the locations set and return the first value found
 			for value in range(min_location, max_location + 1):
 				if value not in locations_set:
 					return value
@@ -181,6 +182,7 @@ class RegisterPage(Page):
 				# If successful, store the image in an empty location on the flash
 				if finger.store_finger(empty_location):
 					alert.show_alert(alert.AlertType.SUCCESS, "Enrolled successfully!", 2.5, self.enrollment_result_string, self.enrollment_result_message)
+					self.fingerprintId = empty_location	# Set the fingerprintId after successful enrollment
 				else:
 					alert.show_alert(alert.AlertType.ERROR, "Error while storing the fingerprint", 5, self.enrollment_result_string, self.enrollment_result_message)
 			else:
@@ -304,7 +306,7 @@ class LoginPage(Page):
 		self.register_user_btn.pack(pady=10)
 		
 		def attempt_login(self, username, password):
-			credentials = {"username": username, "password": password, "fingerprintID": 1, "sensorID": 1}
+			credentials = {"username": username, "password": password}
 			server_response = None
 			try:
 				server_response = requests.post("https://fingerprint-voter-server.onrender.com/login", data=credentials)
