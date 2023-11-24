@@ -1,13 +1,15 @@
 import time
 import board
-import busio
 from digitalio import DigitalInOut, Direction
 import adafruit_fingerprint
+from micropython import const
+import alert
+
+_TEMPLATEREAD = const(0x1F)
+
 
 led = DigitalInOut(board.D13)
 led.direction = Direction.OUTPUT
-
-# uart = busio.UART(board.TX, board.RX, baudrate=57600)
 
 # If using with a computer such as Linux/RaspberryPi, Mac, Windows with USB/serial converter:
 import serial
@@ -88,11 +90,10 @@ def get_fingerprint_detail():
             print("Other error")
         return False
 
-
 # pylint: disable=too-many-statements
-def enroll_finger():
-    location = get_num()
+def enroll_finger(location):
     """Take a 2 finger images and template it, then store in 'location'"""
+
     for fingerimg in range(1, 3):
         if fingerimg == 1:
             print("Place finger on sensor...", end="")
@@ -160,8 +161,105 @@ def enroll_finger():
 
     return True
 
+        
 ##################################################
 # CUSTOM FUNCTIONS:
+
+def capture_img(img_nr):
+    """Take the finger img"""
+    while True:
+        i = finger.get_image()
+        if i == adafruit_fingerprint.OK:
+            print("Image taken")
+            break
+        if i == adafruit_fingerprint.NOFINGER:
+            print(".", end="")
+        elif i == adafruit_fingerprint.IMAGEFAIL:
+            print("Imaging error")
+            return False
+        else:
+            print("Other error")
+            return False
+            
+    """Template the finger img"""
+    print("Templating...", end="")
+    i = finger.image_2_tz(img_nr)
+    if i == adafruit_fingerprint.OK:
+        print("Templated")
+    else:
+        if i == adafruit_fingerprint.IMAGEMESS:
+            print("Image too messy")
+        elif i == adafruit_fingerprint.FEATUREFAIL:
+            print("Could not identify features")
+        elif i == adafruit_fingerprint.INVALIDIMAGE:
+            print("Image invalid")
+        else:
+            print("Other error")
+        return False
+
+    if img_nr == 1:
+        print("Remove finger")
+        time.sleep(1)
+        while i != adafruit_fingerprint.NOFINGER:
+            i = finger.get_image()
+    
+    return True
+
+
+def store_finger(location):
+    """Store fingerprint img in location"""
+    print("Creating model...", end="")
+    i = finger.create_model()
+    if i == adafruit_fingerprint.OK:
+        print("Created")
+    else:
+        if i == adafruit_fingerprint.ENROLLMISMATCH:
+            print("Prints did not match")
+        else:
+            print("Other error")
+        return False
+
+    print("Storing model #%d..." % location, end="")
+    i = finger.store_model(location)
+    if i == adafruit_fingerprint.OK:
+        print("Stored")
+    else:
+        if i == adafruit_fingerprint.BADLOCATION:
+            print("Bad storage location")
+        elif i == adafruit_fingerprint.FLASHERR:
+            print("Flash storage error")
+        else:
+            print("Other error")
+        return False
+
+    return True
+
+
+def read_templates() -> int:
+    """Requests the sensor to list of all template locations in use and
+    stores them in self.templates. Returns the packet error code or
+    OK success"""
+    from math import ceil  # pylint: disable=import-outside-toplevel
+
+    finger.templates = []
+    finger.read_sysparam()
+    temp_r = [
+        0x0C,
+    ]
+    for j in range(ceil(finger.library_size / 256)):
+        finger._send_packet([_TEMPLATEREAD, j])
+        r = finger._get_packet(44)
+        if r[0] == adafruit_fingerprint.OK:
+            for i in range(32):
+                byte = r[i + 1]
+                for bit in range(8):
+                    if byte & (1 << bit):
+                        finger.templates.append((i * 8) + bit + (j * 256))
+            temp_r = r
+        else:
+            r = temp_r
+    return finger.templates
+
 
 # Check sensor status: returns boolean true/false
 '''
@@ -220,5 +318,18 @@ def search_location(location):
         return False
     
     if (finger.compare_templates() == adafruit_fingerprint.OK):
+        print("Fingerprint matched! Welcome.")
         return True
     return False
+    
+
+# Clear location
+'''Function to delete a saved fingerprint from the location given as parameter.'''
+def clear_location(locaion):
+    i = finger.delete_model(location)
+    if i == adafruit_fingerprint.OK:
+        print("Location cleared.")
+        return True
+    else:
+        print("Can't clear location")
+        return False
