@@ -321,3 +321,15 @@ def search_location(location):
         print("Fingerprint matched! Welcome.")
         return True
     return False
+    
+
+# Clear location
+'''Function to delete a saved fingerprint from the location given as parameter.'''
+def clear_location(locaion):
+    i = finger.delete_model(location)
+    if i == adafruit_fingerprint.OK:
+        print("Location cleared.")
+        return True
+    else:
+        print("Can't clear location")
+        return False

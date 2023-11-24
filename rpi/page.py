@@ -143,9 +143,11 @@ class RegisterPage(Page):
 					if server_error != "":
 						print("An error occured: ", server_error)
 						alert.show_alert(alert.AlertType.ERROR, server_error, 2.5, self.result_string, self.result_message)
+						finger.clear_location(fingerprintId)
 			except Exception as error:
 				print("An error occured: ", error)
 				alert.show_alert(alert.AlertType.ERROR, error, 5, self.result_string, self.result_message)
+				finger.clear_location(fingerprintId)
 		
 		def get_empty_location(self):
 			min_location = 1
