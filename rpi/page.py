@@ -44,7 +44,8 @@ class MainView(tk.Frame):
         self.p1 = LoginPage(self)
         self.p2 = RegisterPage(self)
         self.p3 = VotePage(self)
-
+        self.location = 0
+	
         buttonframe = tk.Frame(self)
         container = tk.Frame(self)
         buttonframe.pack(side="top", fill="x", expand=False)
@@ -89,6 +90,9 @@ class MainView(tk.Frame):
         self.p2.pack_forget()
         self.p3.pack(fill="both", expand=True)
         
+    def update_location(self, location):
+        self.location = location
+        
 class Page(tk.Frame):
     def __init__(self, *args, **kwargs):
         tk.Frame.__init__(self, *args, **kwargs)
@@ -118,7 +122,7 @@ class RegisterPage(Page):
 		self.enrollment_result_string = tk.StringVar(value="")
 		self.enrollment_result_message = tk.Label(self, textvariable=self.enrollment_result_string, wraplength=500, justify="center", bg="#fff", font="helvetica 14")
 
-		self.fingerprint_enrollment_btn = tk.Button(self, text="Enroll Fingerprint", height=1, width=16, command=lambda: enroll_fingerprint(self))
+		self.fingerprint_enrollment_btn = tk.Button(self, text="Fingerprint Enrollment", height=1, width=16, command=lambda: enroll_fingerprint(self))
 		
 		self.username_label.pack(pady=10)
 		self.username_input.pack(pady=5)
@@ -128,10 +132,10 @@ class RegisterPage(Page):
 		self.register_user_btn.pack(pady=10)
 		
 		def attempt_register(self, username, password, fingerprintId):
-			credentials = {"username": username, "password": password, "fingerprintId": fingerprintId, "sensorId": 1}
+			payload = {"username": username, "password": password, "fingerprintId": fingerprintId, "sensorId": 1}
 			server_response = None
 			try:
-				server_response = requests.post("http://fingerprint-voter-server.onrender.com/register", data=credentials)
+				server_response = requests.post("http://fingerprint-voter-server.onrender.com/register", data=payload)
 				if server_response.status_code == requests.codes.ok:
 				    alert.show_alert(alert.AlertType.SUCCESS, "Registered successfully", 2.5, self.result_string, self.result_message)
 				else:
@@ -189,12 +193,12 @@ class RegisterPage(Page):
 				alert.show_alert(alert.AlertType.ERROR, "Error while capturing finger image", 5, self.enrollment_result_string, self.enrollment_result_message)
 
 
-			
     
         
 class VotePage(Page):
-	def __init__(self, *args, **kwargs):
+	def __init__(self, main_view, *args, **kwargs):
 		Page.__init__(self, *args, **kwargs)
+		self.main_view = main_view
 		self.title_label = tk.Label(self, text="Fingerprint Authentication", font="helvetica 20 bold", bg="#fff")
 		self.title_label.pack(side="top", fill="both", expand=True)
 		self.fingerprint_auth_result_string = tk.StringVar(value="")
@@ -204,6 +208,7 @@ class VotePage(Page):
 		self.instruction_label.pack(side="top", fill="both", expand=True)
 		self.btn = tk.Button(self, text="Search", command=self.authenticate_fingerprint)
 		self.btn.pack(side="top", fill="both", expand=True)
+		#self.location = location
 
 		# Additional components for vote options
 		self.vote_buttons_frame = tk.Frame(self)
@@ -215,9 +220,8 @@ class VotePage(Page):
 		self.vote_button_3 = tk.Button(self.vote_buttons_frame, text="Beyoncé", command=lambda: self.cast_vote(3))
         
 	def authenticate_fingerprint(self):
-		# Add your fingerprint authentication logic here
-		location = 1
-		#fingerprint_auth_result = finger.search_location(1)  # Replace this with your actual fingerprint authentication logic
+		# Get the location
+		location = self.main_view.location
 		for attempt in range(1, 4):
 			if finger.search_location(location):
 				alert.show_alert(alert.AlertType.SUCCESS, "Authenticated successfully!", 2.5, self.fingerprint_auth_result_string, self.fingerprint_auth_result_message)
@@ -313,11 +317,17 @@ class LoginPage(Page):
 				if server_response.status_code == requests.codes.ok:
 					alert.show_alert(alert.AlertType.SUCCESS, "Logged in successfully", 2.5, self.result_string, self.result_message)
 				
-				# Get the JWT token from the server
+					# Get the JWT token from the server
 					jwt_token = server_response.json().get("token")
 
-				# Store the JWT token
+					# Store the JWT token
 					kr.set_password("fp-voter", "jwt_token", jwt_token)
+					
+					# Get the fingerprint Id
+					fingerprintId = server_response.json().get("fingerprintId")
+					
+					# Update the location
+					self.main_view.update_location(fingerprintId)
 					
 					self.main_view.show_vote_page()
 				else:
