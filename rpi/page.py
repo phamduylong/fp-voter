@@ -128,7 +128,7 @@ class RegisterPage(Page):
 		self.register_user_btn.pack(pady=10)
 		
 		def attempt_register(self, username, password, fingerprintId):
-			credentials = {"username": username, "password": password, "fingerprintId": fingerprintId, "sensorId": 1}
+			credentials = {"username": username, "password": password, "fingerprintId": fingerprintId, "sensorId": 0}
 			server_response = None
 			try:
 				server_response = requests.post("http://fingerprint-voter-server.onrender.com/register", data=credentials)
@@ -139,9 +139,11 @@ class RegisterPage(Page):
 					if server_error != "":
 						print("An error occured: ", server_error)
 						alert.show_alert(alert.AlertType.ERROR, server_error, 2.5, self.result_string, self.result_message)
+						finger.clear_location(fingerprintId)
 			except Exception as error:
 				print("An error occured: ", error)
 				alert.show_alert(alert.AlertType.ERROR, error, 5, self.result_string, self.result_message)
+				finger.clear_location(fingerprintId)
 		
 		def get_empty_location(self):
 			min_location = 1
