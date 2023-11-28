@@ -141,7 +141,6 @@ class RegisterPage(Page):
 		
 		def attempt_register(self, username, password, fingerprintId):
 			payload = {"username": username, "password": password, "fingerprintId": fingerprintId, "sensorId": 1}
-			print(str(payload))
 			server_response = None
 			try:
 				server_response = requests.post("http://fingerprint-voter-server.onrender.com/register", data=payload)
