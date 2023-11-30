@@ -354,26 +354,30 @@ class VotePage(Page):
 		self.title_label.config(text="Thank you for voting!", font="helvetica 20 bold")
 		self.title_label.pack(side="top", fill="both", expand=True)
 
-        
 class LoginPage(Page):
 	def __init__(self, main_view, *args, **kwargs):
 		Page.__init__(self, *args, **kwargs)
 		self.main_view = main_view  # Store a reference to the MainView instance
-		self.title_label = tk.Label(self, text="Login to system", font="helvetica 20 bold", bg="#fff")
-		self.title_label.pack(side="top", fill="both", expand=True)
 		
-		self.username_label = tk.Label(self, bg="#fff", text="Username")
-		self.username_input = tk.Entry(self, width=20, bg="#fff", bd=1, relief="solid")
-		self.password_label = tk.Label(self, bg="#fff", text="Password")
-		self.password_input = tk.Entry(self, show="*", width=20, bg="#fff", bd=1, relief="solid")
+		# Create a login frame
+		login_frame = tk.Frame(self, height=660, width=1320, bg="#fff", bd=2, relief="solid")
+		login_frame.pack_propagate(0)
 		
-		self.submit_credentials_btn = tk.Button(self, text="Submit", height=1, width=8, command=lambda: attempt_login(self, self.username_input.get(), self.password_input.get()))
-		self.register_user_btn = tk.Button(self, text="Don't have an account? Click here to register.", bg="#fff", font="helvetica 12 underline", command=lambda: self.main_view.show_register_page())
+		self.title_label = tk.Label(login_frame, text="Login", font="helvetica 20 bold", bg="#fff")
+		self.title_label.pack(pady=50)
+		
+		self.username_label = tk.Label(login_frame, bg="#fff", text="Username")
+		self.username_input = tk.Entry(login_frame, width=20, bg="#fff", bd=1, relief="solid")
+		self.password_label = tk.Label(login_frame, bg="#fff", text="Password")
+		self.password_input = tk.Entry(login_frame, show="*", width=20, bg="#fff", bd=1, relief="solid")
+		
+		self.submit_credentials_btn = tk.Button(login_frame, text="Submit", height=1, width=8, command=lambda: attempt_login(self, self.username_input.get(), self.password_input.get()))
+		self.register_user_btn = tk.Button(login_frame, text="Don't have an account? Click here to register.", font="helvetica 12 underline", command=lambda: self.main_view.show_register_page())
 		
 		self.result_string = tk.StringVar(value="")
 		self.result_message = tk.Label(self, textvariable=self.result_string, wraplength=500, justify="center", bg="#fff", font="helvetica 14")
 		
-		self.login_success_label = tk.Label(self, text="Logged in successfully!", font="helvetica 15", bg="#fff", foreground="green")
+		self.login_success_label = tk.Label(login_frame, text="Logged in successfully!", font="helvetica 15", bg="#fff", foreground="green")
 
 		self.username_label.pack(pady=10)
 		self.username_input.pack(pady=5)
@@ -381,6 +385,8 @@ class LoginPage(Page):
 		self.password_input.pack(pady=5)
 		self.submit_credentials_btn.pack(pady=30)
 		self.register_user_btn.pack(pady=10)
+		
+		login_frame.pack()
 		
 		def attempt_login(self, username, password):
 			credentials = {"username": username, "password": password}
@@ -412,13 +418,13 @@ class LoginPage(Page):
 					server_error = server_response.json()["error"]
 					if server_error != "":
 						print("An error occured: ", server_error)
-						self.login_error_label = tk.Label(self, text=str(server_error), font="helvetica 15", bg="#fff", foreground="red")
+						self.login_error_label = tk.Label(login_frame, text=str(server_error), font="helvetica 15", bg="#fff", foreground="red")
 						self.login_error_label.pack(pady=10)
 						
 						self.main_view.schedule_label_clear(self.login_error_label, 5000)	# Hide the label after 5 seconds
 			except Exception as error:
 				print("An error occured: ", error)
-				self.exception_label = tk.Label(self, text=str(error), font="helvetica 15", bg="#fff", foreground="red")
+				self.exception_label = tk.Label(login_frame, text=str(error), font="helvetica 15", bg="#fff", foreground="red")
 				self.exception_label.pack(pady=10)
 						
 				self.main_view.schedule_label_clear(self.exception_label, 5000)
