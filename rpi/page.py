@@ -124,6 +124,14 @@ class RegisterPage(Page):
 
 		self.fingerprint_enrollment_btn = tk.Button(self, text="Fingerprint Enrollment", height=1, width=16, command=lambda: enroll_fingerprint(self))
 		
+		self.register_success_label = tk.Label(self, text="Registered successfully!", font="helvetica 15", bg="#fff", foreground="green")
+
+		self.first_img_instruction_label = tk.Label(self, text="Place your finger on the scanner...", font="helvetica 15", bg="#fff")
+		self.second_img_instruction_label = tk.Label(self, text="Place the same finger again...", font="helvetica 15", bg="#fff")
+		self.img_error_label = tk.Label(self, text="Error while capturing finger image", font="helvetica 15", bg="#fff", foreground="red")
+		self.storage_error_label = tk.Label(self, text="Error while storing the fingerprint", font="helvetica 15", bg="#fff", foreground="red")
+		self.enrollment_success_label = tk.Label(self, text="Enrolled successfully!", font="helvetica 15", bg="#fff", foreground="green")
+
 		self.username_label.pack(pady=10)
 		self.username_input.pack(pady=5)
 		self.password_label.pack(pady=10)
@@ -137,16 +145,28 @@ class RegisterPage(Page):
 			try:
 				server_response = requests.post("http://fingerprint-voter-server.onrender.com/register", data=payload)
 				if server_response.status_code == requests.codes.ok:
-				    alert.show_alert(alert.AlertType.SUCCESS, "Registered successfully", 2.5, self.result_string, self.result_message)
+					self.register_success_label.pack(pady=10)
+					
+					schedule_label_clear(self, self.register_success_label, 3000)		# Hide the label after 3 seconds
+					
+					clear_input_fields(self)	# Clear username & password input fields
 				else:
 					server_error = server_response.json()["error"]
 					if server_error != "":
 						print("An error occured: ", server_error)
-						alert.show_alert(alert.AlertType.ERROR, server_error, 2.5, self.result_string, self.result_message)
+						self.register_error_label = tk.Label(self, text=str(server_error), font="helvetica 15", bg="#fff", foreground="red")
+						self.register_error_label.pack(pady=10)
+						
+						schedule_label_clear(self, self.register_error_label, 5000)
+						
 						finger.clear_location(fingerprintId)
 			except Exception as error:
 				print("An error occured: ", error)
-				alert.show_alert(alert.AlertType.ERROR, error, 5, self.result_string, self.result_message)
+				self.exception_label = tk.Label(self, text=str(error), font="helvetica 15", bg="#fff", foreground="red")
+				self.exception_label.pack(pady=10)
+				
+				schedule_label_clear(self, self.exception_label, 5000)
+				
 				finger.clear_location(fingerprintId)
 		
 		def get_empty_location(self):
@@ -168,32 +188,66 @@ class RegisterPage(Page):
 			empty_location = get_empty_location(self)
 			
 			# Prompt the user to capture the finger image for the first time
-			self.first_img_instruction_label = tk.Label(self, text="Place your finger on the scanner...", font="helvetica 15", bg="#fff")
 			self.first_img_instruction_label.pack(pady=10)
 
 			self.update_idletasks()
 			
 			# Capture finger image for the first time
 			if finger.capture_img(1):
-				# if successful, prompt the user to capture the finger image for the second time
-				self.second_img_instruction_label = tk.Label(self, text="Place the same finger again...", font="helvetica 15", bg="#fff")
+				# If successful, prompt the user to capture the finger image for the second time
 				self.second_img_instruction_label.pack(pady=10)
 			else:
-				alert.show_alert(alert.AlertType.ERROR, "Error while capturing finger image", 5, self.enrollment_result_string, self.enrollment_result_message)
-			
+				# If an error occured, hide the instruction labels and display error message
+				self.first_img_instruction_label.pack_forget()
+				self.second_img_instruction_label.pack_forget()
+				
+				# Display error message
+				self.img_error_label.pack(pady=10)
+				
+				schedule_label_clear(self, self.img_error_label, 5000)
+				return
+				
 			self.update_idletasks()
 			
 			# Capture finger image for the second time
 			if finger.capture_img(2):
 				# If successful, store the image in an empty location on the flash
 				if finger.store_finger(empty_location):
-					alert.show_alert(alert.AlertType.SUCCESS, "Enrolled successfully!", 2.5, self.enrollment_result_string, self.enrollment_result_message)
+					# Hide the instruction labels
+					self.first_img_instruction_label.pack_forget()
+					self.second_img_instruction_label.pack_forget()
+					
+					# Display the success message
+					self.enrollment_success_label.pack(pady=10)
+					
+					schedule_label_clear(self, self.enrollment_success_label, 3000)
+					
 					self.fingerprintId = empty_location	# Set the fingerprintId after successful enrollment
 				else:
-					alert.show_alert(alert.AlertType.ERROR, "Error while storing the fingerprint", 5, self.enrollment_result_string, self.enrollment_result_message)
+					self.first_img_instruction_label.pack_forget()
+					self.second_img_instruction_label.pack_forget()
+					
+					# Display error message
+					self.storage_error_label.pack(pady=10)
+					
+					schedule_label_clear(self, self.storage_error_label, 5000)
 			else:
-				alert.show_alert(alert.AlertType.ERROR, "Error while capturing finger image", 5, self.enrollment_result_string, self.enrollment_result_message)
+				self.first_img_instruction_label.pack_forget()
+				self.second_img_instruction_label.pack_forget()
+				
+				# Display error message
+				self.img_error_label.pack(pady=10)
+				
+				schedule_label_clear(self, self.img_error_label, 5000)
+				
+				
+		def clear_input_fields(self):
+			self.username_input.delete(0, tk.END)
+			self.password_input.delete(0, tk.END)
 
+		def schedule_label_clear(self, label_widget, delay):
+			self.after(delay, lambda: label_widget.pack_forget())
+			
 
     
         
