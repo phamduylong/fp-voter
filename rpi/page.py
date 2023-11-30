@@ -271,19 +271,33 @@ class VotePage(Page):
 		self.vote_button_1 = tk.Button(self.vote_buttons_frame, text="Joe Biden", command=lambda: self.cast_vote(1))
 		self.vote_button_2 = tk.Button(self.vote_buttons_frame, text="Kendrick Lamar", command=lambda: self.cast_vote(2))
 		self.vote_button_3 = tk.Button(self.vote_buttons_frame, text="Beyoncé", command=lambda: self.cast_vote(3))
+		
+		self.fingerprint_auth_success_label = tk.Label(self, text="Authenticated successfully!", font="helvetica 15", bg="#fff", foreground="green")
+		self.fingerprint_auth_failure_label = tk.Label(self, text="Fingerprint not found after 3 attempts. Please contact the election manager!", font="helvetica 15", bg="#fff", foreground="red")
         
 	def authenticate_fingerprint(self):
 		# Get the location
 		location = self.main_view.location
 		for attempt in range(1, 4):
 			if finger.search_location(location):
-				alert.show_alert(alert.AlertType.SUCCESS, "Authenticated successfully!", 2.5, self.fingerprint_auth_result_string, self.fingerprint_auth_result_message)
+				self.fingerprint_auth_success_label.pack(pady=10)	# Show success label
+				self.main_view.schedule_label_clear(self.fingerprint_auth_success_label, 3000)	# Hide the label after 3 seconds
+
 				self.fingerprint_auth_result = "success"
 				break
 			elif attempt < 3:               # Fingerprint not found, try again (max. 2 retries)
-				alert.show_alert(alert.AlertType.ERROR, f"Finger not found! Place your finger again... (Attempt {attempt + 1})", 10, self.fingerprint_auth_result_string, self.fingerprint_auth_result_message)
+				self.fingerprint_auth_error_label = tk.Label(self, text=f"Finger not found! Place your finger again... (Attempt {attempt + 1})", font="helvetica 15", bg="#fff", foreground="red")
+				self.fingerprint_auth_error_label.pack(pady=10)
+				
+				self.main_view.schedule_label_clear(self.fingerprint_auth_error_label, 5000)		# Hide the label after 5 seconds
+
+				self.update_idletasks()
 			else:
-				alert.show_alert(alert.AlertType.ERROR, "Fingerprint not found after 3 attempts. Please contact the election manager!", 10, self.fingerprint_auth_result_string, self.fingerprint_auth_result_message)
+				self.fingerprint_auth_error_label.pack_forget()		# Hide all error messages 
+				
+				self.fingerprint_auth_failure_label.pack(pady=10)	# Show failure label
+				self.main_view.schedule_label_clear(self.fingerprint_auth_failure_label, 5000)
+
 				self.fingerprint_auth_result = "failure"
 				self.user_not_found()
 		if self.fingerprint_auth_result == "success":
@@ -291,7 +305,7 @@ class VotePage(Page):
 			self.show_vote_options()
 		else:
 			self.fingerprint_auth_result_string.set("Fingerprint Authentication Failed")
-			self.show_failure()
+			#self.show_failure()
 
 	def show_vote_options(self):
 		# Clear existing components
