@@ -371,8 +371,8 @@ class LoginPage(Page):
 		self.password_label = tk.Label(login_frame, bg="#fff", text="Password")
 		self.password_input = tk.Entry(login_frame, show="*", width=20, bg="#fff", bd=1, relief="solid")
 		
-		self.submit_credentials_btn = tk.Button(login_frame, text="Submit", height=1, width=8, command=lambda: attempt_login(self, self.username_input.get(), self.password_input.get()))
-		self.register_user_btn = tk.Button(login_frame, text="Don't have an account? Click here to register.", font="helvetica 12 underline", command=lambda: self.main_view.show_register_page())
+		self.submit_credentials_btn = tk.Button(login_frame, text="Submit", height=1, width=8, cursor="hand2", command=lambda: attempt_login(self, self.username_input.get(), self.password_input.get()))
+		self.register_user_btn = tk.Button(login_frame, text="Don't have an account? Click here to register.", font="helvetica 12 underline", relief=tk.FLAT, cursor="hand2",  borderwidth=0, highlightthickness=0, bg="#fff", activebackground="#fff", command=lambda: self.main_view.show_register_page())
 		
 		self.result_string = tk.StringVar(value="")
 		self.result_message = tk.Label(self, textvariable=self.result_string, wraplength=500, justify="center", bg="#fff", font="helvetica 14")
