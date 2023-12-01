@@ -38,60 +38,65 @@ def get_jwt_token():
     
 
 class MainView(tk.Frame):
-    def __init__(self, *args, **kwargs):
-        tk.Frame.__init__(self, *args, **kwargs)
-        self.p0 = GreetingPage(self)
-        self.p1 = LoginPage(self)
-        self.p2 = RegisterPage(self)
-        self.p3 = VotePage(self)
-        self.location = 0
+	def __init__(self, *args, **kwargs):
+		tk.Frame.__init__(self, *args, **kwargs)
+		self.p0 = GreetingPage(self)
+		self.p1 = LoginPage(self)
+		self.p2 = RegisterPage(self)
+		self.p3 = VotePage(self)
+		self.location = 0
 	
-        buttonframe = tk.Frame(self)
-        container = tk.Frame(self)
-        buttonframe.pack(side="top", fill="x", expand=False)
-        container.pack(side="top", fill="both", expand=True)
+		buttonframe = tk.Frame(self)
+		container = tk.Frame(self)
+		buttonframe.pack(side="top", fill="x", expand=False)
+		container.pack(side="top", fill="both", expand=True)
 
-        b1 = tk.Button(buttonframe, text="Login", command=self.show_login_page)
-        b2 = tk.Button(buttonframe, text="Register", command=self.show_register_page)
-        #b3 = tk.Button(buttonframe, text="Vote", command=self.show_vote_page)
+		b1 = tk.Button(buttonframe, text="Login", command=self.show_login_page)
+		b2 = tk.Button(buttonframe, text="Register", command=self.show_register_page)
 
-        b1.pack(side="left")
-        b2.pack(side="left")
-        #b3.pack(side="left")
+		b1.pack(side="left")
+		b2.pack(side="left")
 
-        self.p0.pack(fill="both", expand=True)
-        self.p1.pack(fill="both", expand=True)
-        self.p2.pack(fill="both", expand=True)
-        #self.p3.pack(fill="both", expand=True)
+		self.p0.pack(fill="both", expand=True)
+		self.p1.pack(fill="both", expand=True)
+		self.p2.pack(fill="both", expand=True)
 
-        self.show_greeting_page()
+		self.show_greeting_page()
 
-    def show_greeting_page(self):
-        self.p0.pack(fill="both", expand=True)
-        self.p1.pack_forget()
-        self.p2.pack_forget()
-        self.p3.pack_forget()
+	def show_greeting_page(self):
+		self.p0.pack(fill="both", expand=True)
+		self.p1.pack_forget()
+		self.p2.pack_forget()
+		self.p3.pack_forget()
 
-    def show_login_page(self):
-        self.p0.pack_forget()
-        self.p1.pack(fill="both", expand=True)
-        self.p2.pack_forget()
-        self.p3.pack_forget()
+	def show_login_page(self):
+		self.p0.pack_forget()
+		self.p1.pack(fill="both", expand=True)
+		self.p2.pack_forget()
+		self.p3.pack_forget()
 
-    def show_register_page(self):
-        self.p0.pack_forget()
-        self.p1.pack_forget()
-        self.p2.pack(fill="both", expand=True)
-        self.p3.pack_forget()
+	def show_register_page(self):
+		self.p0.pack_forget()
+		self.p1.pack_forget()
+		self.p2.pack(fill="both", expand=True)
+		self.p3.pack_forget()
 
-    def show_vote_page(self):
-        self.p0.pack_forget()
-        self.p1.pack_forget()
-        self.p2.pack_forget()
-        self.p3.pack(fill="both", expand=True)
+	def show_vote_page(self):
+		self.p0.pack_forget()
+		self.p1.pack_forget()
+		self.p2.pack_forget()
+		self.p3.pack(fill="both", expand=True)
         
-    def update_location(self, location):
-        self.location = location
+	def update_location(self, location):
+		self.location = location
+        
+	def clear_input_fields(self, username_input, password_input):
+		username_input.delete(0, tk.END)
+		password_input.delete(0, tk.END)
+
+	def schedule_label_clear(self, label_widget, delay):
+		self.after(delay, lambda: label_widget.pack_forget())
+        
         
 class Page(tk.Frame):
     def __init__(self, *args, **kwargs):
@@ -147,9 +152,9 @@ class RegisterPage(Page):
 				if server_response.status_code == requests.codes.ok:
 					self.register_success_label.pack(pady=10)
 					
-					schedule_label_clear(self, self.register_success_label, 3000)		# Hide the label after 3 seconds
+					self.main_view.schedule_label_clear(self.register_success_label, 3000)		# Hide the label after 3 seconds
 					
-					clear_input_fields(self)	# Clear username & password input fields
+					self.main_view.clear_input_fields(self.username_input, self.password_input)	# Clear username & password input fields
 				else:
 					server_error = server_response.json()["error"]
 					if server_error != "":
@@ -157,7 +162,7 @@ class RegisterPage(Page):
 						self.register_error_label = tk.Label(self, text=str(server_error), font="helvetica 15", bg="#fff", foreground="red")
 						self.register_error_label.pack(pady=10)
 						
-						schedule_label_clear(self, self.register_error_label, 5000)
+						self.main_view.schedule_label_clear(self.register_error_label, 5000)
 						
 						finger.clear_location(fingerprintId)
 			except Exception as error:
@@ -165,7 +170,7 @@ class RegisterPage(Page):
 				self.exception_label = tk.Label(self, text=str(error), font="helvetica 15", bg="#fff", foreground="red")
 				self.exception_label.pack(pady=10)
 				
-				schedule_label_clear(self, self.exception_label, 5000)
+				self.main_view.schedule_label_clear(self.exception_label, 5000)
 				
 				finger.clear_location(fingerprintId)
 		
@@ -204,7 +209,7 @@ class RegisterPage(Page):
 				# Display error message
 				self.img_error_label.pack(pady=10)
 				
-				schedule_label_clear(self, self.img_error_label, 5000)
+				self.main_view.schedule_label_clear(self.img_error_label, 5000)
 				return
 				
 			self.update_idletasks()
@@ -220,7 +225,7 @@ class RegisterPage(Page):
 					# Display the success message
 					self.enrollment_success_label.pack(pady=10)
 					
-					schedule_label_clear(self, self.enrollment_success_label, 3000)
+					self.main_view.schedule_label_clear(self.enrollment_success_label, 3000)
 					
 					self.fingerprintId = empty_location	# Set the fingerprintId after successful enrollment
 				else:
@@ -230,7 +235,7 @@ class RegisterPage(Page):
 					# Display error message
 					self.storage_error_label.pack(pady=10)
 					
-					schedule_label_clear(self, self.storage_error_label, 5000)
+					self.main_view.schedule_label_clear(self.storage_error_label, 5000)
 			else:
 				self.first_img_instruction_label.pack_forget()
 				self.second_img_instruction_label.pack_forget()
@@ -238,16 +243,8 @@ class RegisterPage(Page):
 				# Display error message
 				self.img_error_label.pack(pady=10)
 				
-				schedule_label_clear(self, self.img_error_label, 5000)
-				
-				
-		def clear_input_fields(self):
-			self.username_input.delete(0, tk.END)
-			self.password_input.delete(0, tk.END)
+				self.main_view.schedule_label_clear(self.img_error_label, 5000)
 
-		def schedule_label_clear(self, label_widget, delay):
-			self.after(delay, lambda: label_widget.pack_forget())
-			
 
     
         
@@ -274,19 +271,33 @@ class VotePage(Page):
 		self.vote_button_1 = tk.Button(self.vote_buttons_frame, text="Joe Biden", command=lambda: self.cast_vote(1))
 		self.vote_button_2 = tk.Button(self.vote_buttons_frame, text="Kendrick Lamar", command=lambda: self.cast_vote(2))
 		self.vote_button_3 = tk.Button(self.vote_buttons_frame, text="Beyoncé", command=lambda: self.cast_vote(3))
+		
+		self.fingerprint_auth_success_label = tk.Label(self, text="Authenticated successfully!", font="helvetica 15", bg="#fff", foreground="green")
+		self.fingerprint_auth_failure_label = tk.Label(self, text="Fingerprint not found after 3 attempts. Please contact the election manager!", font="helvetica 15", bg="#fff", foreground="red")
         
 	def authenticate_fingerprint(self):
 		# Get the location
 		location = self.main_view.location
 		for attempt in range(1, 4):
 			if finger.search_location(location):
-				alert.show_alert(alert.AlertType.SUCCESS, "Authenticated successfully!", 2.5, self.fingerprint_auth_result_string, self.fingerprint_auth_result_message)
+				self.fingerprint_auth_success_label.pack(pady=10)	# Show success label
+				self.main_view.schedule_label_clear(self.fingerprint_auth_success_label, 3000)	# Hide the label after 3 seconds
+
 				self.fingerprint_auth_result = "success"
 				break
 			elif attempt < 3:               # Fingerprint not found, try again (max. 2 retries)
-				alert.show_alert(alert.AlertType.ERROR, f"Finger not found! Place your finger again... (Attempt {attempt + 1})", 10, self.fingerprint_auth_result_string, self.fingerprint_auth_result_message)
+				self.fingerprint_auth_error_label = tk.Label(self, text=f"Finger not found! Place your finger again... (Attempt {attempt + 1})", font="helvetica 15", bg="#fff", foreground="red")
+				self.fingerprint_auth_error_label.pack(pady=10)
+				
+				self.main_view.schedule_label_clear(self.fingerprint_auth_error_label, 5000)		# Hide the label after 5 seconds
+
+				self.update_idletasks()
 			else:
-				alert.show_alert(alert.AlertType.ERROR, "Fingerprint not found after 3 attempts. Please contact the election manager!", 10, self.fingerprint_auth_result_string, self.fingerprint_auth_result_message)
+				self.fingerprint_auth_error_label.pack_forget()		# Hide all error messages 
+				
+				self.fingerprint_auth_failure_label.pack(pady=10)	# Show failure label
+				self.main_view.schedule_label_clear(self.fingerprint_auth_failure_label, 5000)
+
 				self.fingerprint_auth_result = "failure"
 				self.user_not_found()
 		if self.fingerprint_auth_result == "success":
@@ -294,7 +305,7 @@ class VotePage(Page):
 			self.show_vote_options()
 		else:
 			self.fingerprint_auth_result_string.set("Fingerprint Authentication Failed")
-			self.show_failure()
+			#self.show_failure()
 
 	def show_vote_options(self):
 		# Clear existing components
@@ -350,14 +361,20 @@ class LoginPage(Page):
 		self.main_view = main_view  # Store a reference to the MainView instance
 		self.title_label = tk.Label(self, text="Login to system", font="helvetica 20 bold", bg="#fff")
 		self.title_label.pack(side="top", fill="both", expand=True)
+		
 		self.username_label = tk.Label(self, bg="#fff", text="Username")
 		self.username_input = tk.Entry(self, width=20, bg="#fff", bd=1, relief="solid")
 		self.password_label = tk.Label(self, bg="#fff", text="Password")
 		self.password_input = tk.Entry(self, show="*", width=20, bg="#fff", bd=1, relief="solid")
+		
 		self.submit_credentials_btn = tk.Button(self, text="Submit", height=1, width=8, command=lambda: attempt_login(self, self.username_input.get(), self.password_input.get()))
 		self.register_user_btn = tk.Button(self, text="Don't have an account? Click here to register.", bg="#fff", font="helvetica 12 underline", command=lambda: self.main_view.show_register_page())
+		
 		self.result_string = tk.StringVar(value="")
 		self.result_message = tk.Label(self, textvariable=self.result_string, wraplength=500, justify="center", bg="#fff", font="helvetica 14")
+		
+		self.login_success_label = tk.Label(self, text="Logged in successfully!", font="helvetica 15", bg="#fff", foreground="green")
+
 		self.username_label.pack(pady=10)
 		self.username_input.pack(pady=5)
 		self.password_label.pack(pady=10)
@@ -371,8 +388,11 @@ class LoginPage(Page):
 			try:
 				server_response = requests.post("https://fingerprint-voter-server.onrender.com/login", data=credentials)
 				if server_response.status_code == requests.codes.ok:
-					alert.show_alert(alert.AlertType.SUCCESS, "Logged in successfully", 2.5, self.result_string, self.result_message)
-				
+					# Show success label
+					self.login_success_label.pack(pady=10)
+					
+					self.main_view.schedule_label_clear(self.login_success_label, 3000)		# Hide the label after 3 seconds
+					
 					# Get the JWT token from the server
 					jwt_token = server_response.json().get("token")
 
@@ -385,15 +405,23 @@ class LoginPage(Page):
 					# Update the location
 					self.main_view.update_location(fingerprintId)
 					
+					self.main_view.clear_input_fields(self.username_input, self.password_input)	# Clear username & password input fields
+					
 					self.main_view.show_vote_page()
 				else:
 					server_error = server_response.json()["error"]
 					if server_error != "":
 						print("An error occured: ", server_error)
-						alert.show_alert(alert.AlertType.ERROR, server_error, 2.5, self.result_string, self.result_message)
+						self.login_error_label = tk.Label(self, text=str(server_error), font="helvetica 15", bg="#fff", foreground="red")
+						self.login_error_label.pack(pady=10)
+						
+						self.main_view.schedule_label_clear(self.login_error_label, 5000)	# Hide the label after 5 seconds
 			except Exception as error:
 				print("An error occured: ", error)
-				alert.show_alert(alert.AlertType.ERROR, error, 5, self.result_string, self.result_message)
+				self.exception_label = tk.Label(self, text=str(error), font="helvetica 15", bg="#fff", foreground="red")
+				self.exception_label.pack(pady=10)
+						
+				self.main_view.schedule_label_clear(self.exception_label, 5000)
         
 class GreetingPage(Page):
     def __init__(self, *args, **kwargs):
