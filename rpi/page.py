@@ -131,8 +131,8 @@ class RegisterPage(Page):
 
 		self.first_img_instruction_label = tk.Label(register_frame, text="Place your finger on the scanner...", font="helvetica 15", bg="#fff")
 		self.second_img_instruction_label = tk.Label(register_frame, text="Place the same finger again...", font="helvetica 15", bg="#fff")
-		self.img_error_label = tk.Label(register_frame, text="Error while capturing finger image!", font="helvetica 15", bg="#fff", foreground="red")
-		self.storage_error_label = tk.Label(register_frame, text="Error while storing the fingerprint!", font="helvetica 15", bg="#fff", foreground="red")
+		self.img_error_label = tk.Label(register_frame, text="Error while capturing finger image. Please contact the election manager.", font="helvetica 15", bg="#fff", foreground="red")
+		self.storage_error_label = tk.Label(register_frame, text="Error while storing the fingerprint. Please contact the election manager.", font="helvetica 15", bg="#fff", foreground="red")
 		self.enrollment_success_label = tk.Label(register_frame, text="Enrolled successfully!", font="helvetica 15", bg="#fff", foreground="green")
 
 		self.username_label.pack(pady=10)
