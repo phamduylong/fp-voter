@@ -4,6 +4,7 @@ import sensor_functions as finger
 import alert
 import keyring as kr
 import subprocess
+import tkinter.messagebox
 
 def install_python_dbus():
     command = "sudo apt-get install python3-dbus"
@@ -247,7 +248,6 @@ class RegisterPage(Page):
 
 
     
-        ###########login bypass
 class VotePage(Page):
 	def __init__(self, main_view, *args, **kwargs):
 		Page.__init__(self, *args, **kwargs)
@@ -266,20 +266,12 @@ class VotePage(Page):
 		self.btn.pack(pady=50)
 		
 		self.instruction_label = tk.Label(self.fingerprint_auth_frame, text="Place your finger on the scanner...", font="helvetica 15", bg="#fff")
-
-		# Additional components for vote options
-		self.vote_buttons_frame = tk.Frame(self)
-		self.vote_buttons_frame.pack()
-
-		# Vote option buttons
-		self.vote_button_1 = tk.Button(self.vote_buttons_frame, text="Joe Biden", command=lambda: self.cast_vote(1))
-		self.vote_button_2 = tk.Button(self.vote_buttons_frame, text="Kendrick Lamar", command=lambda: self.cast_vote(2))
-		self.vote_button_3 = tk.Button(self.vote_buttons_frame, text="Beyoncé", command=lambda: self.cast_vote(3))
 		
 		self.fingerprint_auth_success_label = tk.Label(self.fingerprint_auth_frame, text="Authenticated successfully!", font="helvetica 15", bg="#fff", foreground="green")
 		self.fingerprint_auth_failure_label = tk.Label(self.fingerprint_auth_frame, text="Fingerprint not found after 3 attempts. Please contact the election manager!", font="helvetica 20", bg="#fff", foreground="red")
         
 		self.fingerprint_auth_frame.pack()
+		
 	def authenticate_fingerprint(self):
 		self.instruction_label.pack(pady=10)
 
@@ -297,18 +289,15 @@ class VotePage(Page):
 				break
 			elif attempt < 3:               # Fingerprint not found, try again (max. 2 retries)
 				self.fingerprint_auth_error_label = tk.Label(self.fingerprint_auth_frame, text=f"Finger not found! Place your finger again... (Attempt {attempt + 1})", font="helvetica 15", bg="#fff", foreground="red")
-				self.fingerprint_auth_error_label.pack(pady=10)
+				self.fingerprint_auth_error_label.pack(pady=20)
 				
 				self.main_view.schedule_label_clear(self.fingerprint_auth_error_label, 5000)		# Hide the label after 5 seconds
 
 				self.update_idletasks()
 			else:
 				self.fingerprint_auth_error_label.pack_forget()		# Hide all error messages 
-				
-				#self.fingerprint_auth_failure_label.pack(pady=10)	# Show failure label
-				#self.main_view.schedule_label_clear(self.fingerprint_auth_failure_label, 5000)
-
 				self.fingerprint_auth_result = "failure"
+				
 		if self.fingerprint_auth_result == "success":
 			self.fingerprint_auth_result_string.set("Fingerprint Authentication Successful")
 			self.show_vote_options()
@@ -318,33 +307,63 @@ class VotePage(Page):
 			#self.show_vote_options()
 
 	def show_vote_options(self):
-		# Clear existing components
-		self.title_label.pack_forget()
-		self.instruction_label.pack_forget()
-		self.btn.pack_forget()
-
-		# Show vote options
-		self.title_label.config(text="Cast your vote!", font="helvetica 20 bold")
-		self.title_label.pack(side="top", fill="both", expand=True)
-
-		self.vote_button_1.pack(side="top", fill="both", expand=True)
-		self.vote_button_2.pack(side="top", fill="both", expand=True)
-		self.vote_button_3.pack(side="top", fill="both", expand=True)
+		# Clear existing frame
+		self.fingerprint_auth_frame.pack_forget()
+		
+		self.title_label = tk.Label(self, text="Cast your vote!", font="helvetica 20 bold")
+		self.title_label.pack(pady=50)
+		
+		server_response = None
+		try:
+			server_response = requests.get("https://fingerprint-voter-server.onrender.com/candidate/all")
+			if server_response.status_code == requests.codes.ok:
+				candidates = server_response.json() or []
+				
+				container = tk.Frame(self)
+				rows_needed = self.determine_grid_rows_amount(len(candidates))
+				print(rows_needed)
+				
+				container.rowconfigure(rows_needed)
+				container.columnconfigure(3)
+				container.pack()
+				
+				myscrollbar = tk.Scrollbar(container, orient="vertical", highlightbackground="black", highlightthickness=2)
+				myscrollbar.grid(column=3, row=0, sticky='NS')
+				
+				r = 0
+				c = 0
+				for candidate in candidates:
+					if c > 2:
+						r += 1
+						c = 0
+						
+					print(f'[{r}][{c}]: Result {candidate["id"]}: {candidate["name"]}')
+					
+					frame = tk.Frame(container, borderwidth=1, background='white', highlightbackground="black", highlightthickness=2)
+					candidate_name = tk.Label(frame, text=candidate["name"], font="helvetica 20 bold", background='white')
+					candidate_name.pack(pady=25, padx=25)
+					
+					vote_btn = tk.Button(frame, text="Vote", font="helvetica 14", command= lambda candidate_name=candidate["name"]: self.confirm_user_choice(candidate_name))
+					vote_btn.pack(pady=25)
+					
+					frame.grid(row=r, column=c, columnspan=1, padx=150, pady=80)
+					c += 1
+			else:
+				server_error = server_response.json()["error"]
+				if server_error != "":
+					print("An error occured: ", server_error)
+		except Exception as error:
+			print("An error occured: ", error)
+				
         
 	def user_not_found(self):
 		# Clear existing components
 		self.title_label.pack_forget()
 		self.instruction_label.pack_forget()
 		self.btn.pack_forget()
-
-		self.vote_button_1.pack_forget()
-		self.vote_button_2.pack_forget()
-		self.vote_button_3.pack_forget()
         
 		# Show failure
 		self.fingerprint_auth_failure_label.pack(side="top", fill="both", expand=True)	# Show failure label
-		#self.title_label.config(text="Error authenticating user!", font="helvetica 20 bold")
-		#self.title_label.pack()
 
 	def cast_vote(self, candidate):
 		# TO-DO: logic for vote casting here
@@ -361,6 +380,15 @@ class VotePage(Page):
 		# Show farewell msg
 		self.title_label.config(text="Thank you for voting!", font="helvetica 20 bold")
 		self.title_label.pack(side="top", fill="both", expand=True)
+	
+	def determine_grid_rows_amount(self, length):
+		rows = int(length / 3)
+		if length % 3 == 0:
+			return rows
+		return rows + 1
+	
+	def confirm_user_choice(self, name):
+		return tkinter.messagebox.askokcancel("Confirm your vote", "Are you sure you want to vote for candidate " + name + "?")
 
 class LoginPage(Page):
 	def __init__(self, main_view, *args, **kwargs):
@@ -397,9 +425,6 @@ class LoginPage(Page):
 		login_frame.pack()
 		
 		def attempt_login(self, username, password):
-			###########login bypass
-			#self.main_view.show_vote_page()
-
 			credentials = {"username": username, "password": password}
 			server_response = None
 			try:
