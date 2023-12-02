@@ -111,39 +111,39 @@ class RegisterPage(Page):
 	def __init__(self, main_view, *args, **kwargs):
 		Page.__init__(self, *args, **kwargs)
 		self.main_view = main_view  # Store a reference to the MainView instance
-		self.label = tk.Label(self, text="Register page", font="helvetica 20 bold", bg="#fff")
-		self.label.pack(side="top", fill="both", expand=True)
+		
+		# Create a register frame
+		register_frame = tk.Frame(self, height=660, width=1320, bg="#fff", bd=2, relief="solid")
+		register_frame.pack_propagate(0)
+		
+		self.label = tk.Label(register_frame, text="Register", font="helvetica 20 bold", bg="#fff")
+		self.label.pack(pady=50)
 
-		self.username_label = tk.Label(self, bg="#fff", text="Username")
-		self.username_input = tk.Entry(self, width=20, bg="#fff", bd=1, relief="solid")
-		self.password_label = tk.Label(self, bg="#fff", text="Password")
-		self.password_input = tk.Entry(self, show="*", width=20, bg="#fff", bd=1, relief="solid")
+		self.username_label = tk.Label(register_frame, bg="#fff", text="Username")
+		self.username_input = tk.Entry(register_frame, width=20, bg="#fff", bd=1, relief="solid")
+		self.password_label = tk.Label(register_frame, bg="#fff", text="Password")
+		self.password_input = tk.Entry(register_frame, show="*", width=20, bg="#fff", bd=1, relief="solid")
 		
-		self.result_string = tk.StringVar(value="")
-		self.result_message = tk.Label(self, textvariable=self.result_string, wraplength=500, justify="center", bg="#fff", font="helvetica 14")
+		self.register_user_btn = tk.Button(register_frame, text="Register", height=1, width=8, command=lambda: attempt_register(self, self.username_input.get(), self.password_input.get(), self.fingerprintId))
+		self.fingerprint_enrollment_btn = tk.Button(register_frame, text="Fingerprint Enrollment", height=1, width=16, command=lambda: enroll_fingerprint(self))
 		
-		self.register_user_btn = tk.Button(self, text="Register", height=1, width=8, command=lambda: attempt_register(self, self.username_input.get(), self.password_input.get(), self.fingerprintId))
-		
-		self.enrollment_result_string = tk.StringVar(value="")
-		self.enrollment_result_message = tk.Label(self, textvariable=self.enrollment_result_string, wraplength=500, justify="center", bg="#fff", font="helvetica 14")
+		self.register_success_label = tk.Label(register_frame, text="Registered successfully!", font="helvetica 15", bg="#fff", foreground="green")
 
-		self.fingerprint_enrollment_btn = tk.Button(self, text="Fingerprint Enrollment", height=1, width=16, command=lambda: enroll_fingerprint(self))
-		
-		self.register_success_label = tk.Label(self, text="Registered successfully!", font="helvetica 15", bg="#fff", foreground="green")
-
-		self.first_img_instruction_label = tk.Label(self, text="Place your finger on the scanner...", font="helvetica 15", bg="#fff")
-		self.second_img_instruction_label = tk.Label(self, text="Place the same finger again...", font="helvetica 15", bg="#fff")
-		self.img_error_label = tk.Label(self, text="Error while capturing finger image", font="helvetica 15", bg="#fff", foreground="red")
-		self.storage_error_label = tk.Label(self, text="Error while storing the fingerprint", font="helvetica 15", bg="#fff", foreground="red")
-		self.enrollment_success_label = tk.Label(self, text="Enrolled successfully!", font="helvetica 15", bg="#fff", foreground="green")
+		self.first_img_instruction_label = tk.Label(register_frame, text="Place your finger on the scanner...", font="helvetica 15", bg="#fff")
+		self.second_img_instruction_label = tk.Label(register_frame, text="Place the same finger again...", font="helvetica 15", bg="#fff")
+		self.img_error_label = tk.Label(register_frame, text="Error while capturing finger image. Please contact the election manager.", font="helvetica 15", bg="#fff", foreground="red")
+		self.storage_error_label = tk.Label(register_frame, text="Error while storing the fingerprint. Please contact the election manager.", font="helvetica 15", bg="#fff", foreground="red")
+		self.enrollment_success_label = tk.Label(register_frame, text="Enrolled successfully!", font="helvetica 15", bg="#fff", foreground="green")
 
 		self.username_label.pack(pady=10)
 		self.username_input.pack(pady=5)
 		self.password_label.pack(pady=10)
 		self.password_input.pack(pady=5)
-		self.fingerprint_enrollment_btn.pack(pady=10)
+		self.fingerprint_enrollment_btn.pack(pady=30)
 		self.register_user_btn.pack(pady=10)
 		
+		register_frame.pack()
+
 		def attempt_register(self, username, password, fingerprintId):
 			payload = {"username": username, "password": password, "fingerprintId": fingerprintId, "sensorId": 1}
 			server_response = None
@@ -159,7 +159,7 @@ class RegisterPage(Page):
 					server_error = server_response.json()["error"]
 					if server_error != "":
 						print("An error occured: ", server_error)
-						self.register_error_label = tk.Label(self, text=str(server_error), font="helvetica 15", bg="#fff", foreground="red")
+						self.register_error_label = tk.Label(register_frame, text=str(server_error), font="helvetica 15", bg="#fff", foreground="red")
 						self.register_error_label.pack(pady=10)
 						
 						self.main_view.schedule_label_clear(self.register_error_label, 5000)
@@ -167,7 +167,7 @@ class RegisterPage(Page):
 						finger.clear_location(fingerprintId)
 			except Exception as error:
 				print("An error occured: ", error)
-				self.exception_label = tk.Label(self, text=str(error), font="helvetica 15", bg="#fff", foreground="red")
+				self.exception_label = tk.Label(register_frame, text=str(error), font="helvetica 15", bg="#fff", foreground="red")
 				self.exception_label.pack(pady=10)
 				
 				self.main_view.schedule_label_clear(self.exception_label, 5000)
@@ -373,9 +373,6 @@ class LoginPage(Page):
 		
 		self.submit_credentials_btn = tk.Button(login_frame, text="Submit", height=1, width=8, cursor="hand2", command=lambda: attempt_login(self, self.username_input.get(), self.password_input.get()))
 		self.register_user_btn = tk.Button(login_frame, text="Don't have an account? Click here to register.", font="helvetica 12 underline", relief=tk.FLAT, cursor="hand2",  borderwidth=0, highlightthickness=0, bg="#fff", activebackground="#fff", command=lambda: self.main_view.show_register_page())
-		
-		self.result_string = tk.StringVar(value="")
-		self.result_message = tk.Label(self, textvariable=self.result_string, wraplength=500, justify="center", bg="#fff", font="helvetica 14")
 		
 		self.login_success_label = tk.Label(login_frame, text="Logged in successfully!", font="helvetica 15", bg="#fff", foreground="green")
 
