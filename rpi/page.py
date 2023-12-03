@@ -5,6 +5,8 @@ import alert
 import keyring as kr
 import subprocess
 import tkinter.messagebox
+import jwt
+import secrets
 
 def install_python_dbus():
     command = "sudo apt-get install python3-dbus"
@@ -319,15 +321,15 @@ class VotePage(Page):
 			if server_response.status_code == requests.codes.ok:
 				candidates = server_response.json() or []
 				
-				container = tk.Frame(self)
+				self.container = tk.Frame(self)
 				rows_needed = self.determine_grid_rows_amount(len(candidates))
 				print(rows_needed)
 				
-				container.rowconfigure(rows_needed)
-				container.columnconfigure(3)
-				container.pack()
+				self.container.rowconfigure(rows_needed)
+				self.container.columnconfigure(3)
+				self.container.pack()
 				
-				myscrollbar = tk.Scrollbar(container, orient="vertical", highlightbackground="black", highlightthickness=2)
+				myscrollbar = tk.Scrollbar(self.container, orient="vertical", highlightbackground="black", highlightthickness=2)
 				myscrollbar.grid(column=3, row=0, sticky='NS')
 				
 				r = 0
@@ -339,11 +341,11 @@ class VotePage(Page):
 						
 					print(f'[{r}][{c}]: Result {candidate["id"]}: {candidate["name"]}')
 					
-					frame = tk.Frame(container, borderwidth=1, background='white', highlightbackground="black", highlightthickness=2)
+					frame = tk.Frame(self.container, borderwidth=1, background='white', highlightbackground="black", highlightthickness=2)
 					candidate_name = tk.Label(frame, text=candidate["name"], font="helvetica 20 bold", background='white')
 					candidate_name.pack(pady=25, padx=25)
 					
-					vote_btn = tk.Button(frame, text="Vote", font="helvetica 14", command= lambda candidate_name=candidate["name"]: self.confirm_user_choice(candidate_name))
+					vote_btn = tk.Button(frame, text="Vote", font="helvetica 14", command= lambda candidate=candidate: self.handle_vote_confirmation(candidate))
 					vote_btn.pack(pady=25)
 					
 					frame.grid(row=r, column=c, columnspan=1, padx=150, pady=80)
@@ -366,20 +368,45 @@ class VotePage(Page):
 		self.fingerprint_auth_failure_label.pack(side="top", fill="both", expand=True)	# Show failure label
 
 	def cast_vote(self, candidate):
-		# TO-DO: logic for vote casting here
-		self.fingerprint_auth_result_string.set(f"Vote for Candidate {candidate} cast successfully!")
-		self.farewell_message()
+		try:
+			token = get_jwt_token()
+	
+			decoded_token = jwt.decode(token, options={"verify_signature": False}, algorithms=[])
+			
+			user_id = decoded_token.get("userId")
+		except Exception as error:
+			print("An error occured: ", error)
+			
+		if user_id:
+			payload = {"userId": user_id, "candidateId": candidate["id"]}
+			header = {'Authorization': f'Bearer {token}'}
+			
+			server_response = None
+			try:
+				server_response = requests.patch("https://fingerprint-voter-server.onrender.com/user/vote", data=payload, headers=header)
+				if server_response.status_code == requests.codes.ok:
+					self.farewell_message()
+				else:
+					server_error = server_response.json()["error"]
+					if server_error != "":
+						print("An error occured: ", server_error)
+			except Exception as error:
+				print("An error occured: ", error)
+
 
 	def farewell_message(self):
 		# Clear existing components
 		self.title_label.pack_forget()
 		self.instruction_label.pack_forget()
-		self.vote_button_1.pack_forget()
-		self.vote_button_2.pack_forget()
-		self.vote_button_3.pack_forget()
-		# Show farewell msg
-		self.title_label.config(text="Thank you for voting!", font="helvetica 20 bold")
+		self.container.pack_forget()
+		
+		self.farewell_message_frame = tk.Frame(self, height=660, width=1320, bg="#fff", bd=2, relief="solid")
+		self.farewell_message_frame.pack_propagate(0)
+		
+		self.title_label = tk.Label(self.farewell_message_frame, text="Thank you for voting!", font="helvetica 20 bold", bg="#fff")
 		self.title_label.pack(side="top", fill="both", expand=True)
+		
+		self.farewell_message_frame.pack()
 	
 	def determine_grid_rows_amount(self, length):
 		rows = int(length / 3)
@@ -387,8 +414,11 @@ class VotePage(Page):
 			return rows
 		return rows + 1
 	
-	def confirm_user_choice(self, name):
-		return tkinter.messagebox.askokcancel("Confirm your vote", "Are you sure you want to vote for candidate " + name + "?")
+	def handle_vote_confirmation(self, candidate):
+		confirmation =  tkinter.messagebox.askokcancel("Confirm your vote", "Are you sure you want to vote for candidate " + candidate["name"] + "?")
+		
+		if confirmation:
+			self.cast_vote(candidate)
 
 class LoginPage(Page):
 	def __init__(self, main_view, *args, **kwargs):
