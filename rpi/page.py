@@ -6,7 +6,6 @@ import keyring as kr
 import subprocess
 import tkinter.messagebox
 import jwt
-import secrets
 
 def install_python_dbus():
     command = "sudo apt-get install python3-dbus"
