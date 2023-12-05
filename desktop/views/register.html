@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta name="xel-theme" content="../node_modules/xel/themes/adwaita.css">
+    <meta name="xel-iconsets" content="../node_modules/xel/iconsets/fluent.svg">
+    <meta name="xel-accent-color" content="blue">
+    <script src="../node_modules/xel/xel.js" type="module"></script>
+    <meta charset="UTF-8">
+    <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
+    <!-- Needs to be fixed after deploying the server to a real domain -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' http://localhost:8080; style-src 'self' 'unsafe-inline' http://localhost:8080; connect-src 'self' http://localhost:8080;">
+    <link href="../styles/register.css" rel="stylesheet">
+    <link href="../styles/dialog.css" rel="stylesheet">
+    <title>Fingerprint Voter - Register</title>
+  </head>
+  <body>
+    <form id="register-panel">
+      <h1>Register</h1>
+      <span class="input-row">
+        <x-input type="text" id="uid" required>
+          <x-icon href="#person"></x-icon>
+          <x-label>Username</x-label>
+        </x-input>
+      </span>
+      <span class="input-row">
+        <x-input type="password" id="pwd" required>
+          <x-icon href="#lock"></x-icon>
+          <x-label>Password</x-label>
+        </x-input>
+      </span>
+      <span id="register-submit-btn-row">
+        <x-button type="submit" id="register-submit-btn">
+          <x-label>Submit</x-label>
+          <dialog id="register-dialog">
+            <main>
+              <h3 id="error-dialog-title">⛔&nbsp;Error</h3>
+              <p id="err-msg"></p>
+            </main>
+        
+            <footer>
+              <x-button autofocus toggled id="dialog-agree-button">
+                <x-label>OK</x-label>
+              </x-button>
+            </footer>
+          </dialog>
+        </x-button>
+      </span>
+    </form>
+  </body>
+  <script src="../scripts/register.js"></script>
+</html>
