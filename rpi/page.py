@@ -5,6 +5,7 @@ import alert
 import keyring as kr
 import subprocess
 import tkinter.messagebox
+import jwt
 
 def install_python_dbus():
     command = "sudo apt-get install python3-dbus"
@@ -87,6 +88,7 @@ class MainView(tk.Frame):
 		self.p1.pack_forget()
 		self.p2.pack_forget()
 		self.p3.pack(fill="both", expand=True)
+		self.p3.show_fingerprint_frame()
         
 	def update_location(self, location):
 		self.location = location
@@ -253,26 +255,39 @@ class VotePage(Page):
 		Page.__init__(self, *args, **kwargs)
 		self.main_view = main_view
 		
-		# Create a frame
+		# Create frames
 		self.fingerprint_auth_frame = tk.Frame(self, height=660, width=1320, bg="#fff", bd=2, relief="solid")
+		self.vote_options_container = tk.Frame(self)
+		self.farewell_message_frame = tk.Frame(self, height=660, width=1320, bg="#fff", bd=2, relief="solid")
+		
 		self.fingerprint_auth_frame.pack_propagate(0)
+		
+		self.vote_cast_title_label = tk.Label(self, text="Cast your vote!", font="helvetica 20 bold")
+		
+		self.fingerprint_auth_result_string = tk.StringVar(value="")
+		
+		self.fingerprint_auth_success_label = tk.Label(self.fingerprint_auth_frame, text="Authenticated successfully!", font="helvetica 15", bg="#fff", foreground="green")
+		self.fingerprint_auth_failure_label = tk.Label(self.fingerprint_auth_frame, text="Fingerprint not found after 3 attempts. Please contact the election manager!", font="helvetica 20", bg="#fff", foreground="red")
+
+
+	def show_fingerprint_frame(self):
+		# Clear existing components (if any)
+		self.vote_options_container.pack_forget()
+		self.farewell_message_frame.pack_forget()
+		self.vote_cast_title_label.pack_forget()
+		self.fingerprint_auth_failure_label.pack_forget()
 		
 		self.title_label = tk.Label(self.fingerprint_auth_frame, text="Fingerprint Authentication", font="helvetica 20 bold", bg="#fff")
 		self.title_label.pack(pady=50)
 		
-		self.fingerprint_auth_result_string = tk.StringVar(value="")
-		
 		self.btn = tk.Button(self.fingerprint_auth_frame, text="Start Authentication", command=self.authenticate_fingerprint)
 		self.btn.pack(pady=50)
 		
-		self.instruction_label = tk.Label(self.fingerprint_auth_frame, text="Place your finger on the scanner...", font="helvetica 15", bg="#fff")
-		
-		self.fingerprint_auth_success_label = tk.Label(self.fingerprint_auth_frame, text="Authenticated successfully!", font="helvetica 15", bg="#fff", foreground="green")
-		self.fingerprint_auth_failure_label = tk.Label(self.fingerprint_auth_frame, text="Fingerprint not found after 3 attempts. Please contact the election manager!", font="helvetica 20", bg="#fff", foreground="red")
-        
 		self.fingerprint_auth_frame.pack()
-		
+
+
 	def authenticate_fingerprint(self):
+		self.instruction_label = tk.Label(self.fingerprint_auth_frame, text="Place your finger on the scanner...", font="helvetica 15", bg="#fff")
 		self.instruction_label.pack(pady=10)
 
 		# Get the location
@@ -307,11 +322,16 @@ class VotePage(Page):
 			#self.show_vote_options()
 
 	def show_vote_options(self):
-		# Clear existing frame
+		# Clear existing components (if any)
+		self.title_label.pack_forget()
+		self.btn.pack_forget()
+		self.instruction_label.pack_forget()
+		self.fingerprint_auth_failure_label.pack_forget()
 		self.fingerprint_auth_frame.pack_forget()
+		self.farewell_message_frame.pack_forget()
 		
-		self.title_label = tk.Label(self, text="Cast your vote!", font="helvetica 20 bold")
-		self.title_label.pack(pady=50)
+		#self.vote_cast_title_label = tk.Label(self, text="Cast your vote!", font="helvetica 20 bold")
+		self.vote_cast_title_label.pack(pady=50)
 		
 		server_response = None
 		try:
@@ -319,15 +339,15 @@ class VotePage(Page):
 			if server_response.status_code == requests.codes.ok:
 				candidates = server_response.json() or []
 				
-				container = tk.Frame(self)
+				#self.container = tk.Frame(self)
 				rows_needed = self.determine_grid_rows_amount(len(candidates))
 				print(rows_needed)
 				
-				container.rowconfigure(rows_needed)
-				container.columnconfigure(3)
-				container.pack()
+				self.vote_options_container.rowconfigure(rows_needed)
+				self.vote_options_container.columnconfigure(3)
+				self.vote_options_container.pack()
 				
-				myscrollbar = tk.Scrollbar(container, orient="vertical", highlightbackground="black", highlightthickness=2)
+				myscrollbar = tk.Scrollbar(self.vote_options_container, orient="vertical", highlightbackground="black", highlightthickness=2)
 				myscrollbar.grid(column=3, row=0, sticky='NS')
 				
 				r = 0
@@ -339,11 +359,11 @@ class VotePage(Page):
 						
 					print(f'[{r}][{c}]: Result {candidate["id"]}: {candidate["name"]}')
 					
-					frame = tk.Frame(container, borderwidth=1, background='white', highlightbackground="black", highlightthickness=2)
+					frame = tk.Frame(self.vote_options_container, borderwidth=1, background='white', highlightbackground="black", highlightthickness=2)
 					candidate_name = tk.Label(frame, text=candidate["name"], font="helvetica 20 bold", background='white')
 					candidate_name.pack(pady=25, padx=25)
 					
-					vote_btn = tk.Button(frame, text="Vote", font="helvetica 14", command= lambda candidate_name=candidate["name"]: self.confirm_user_choice(candidate_name))
+					vote_btn = tk.Button(frame, text="Vote", font="helvetica 14", command= lambda candidate=candidate: self.handle_vote_confirmation(candidate))
 					vote_btn.pack(pady=25)
 					
 					frame.grid(row=r, column=c, columnspan=1, padx=150, pady=80)
@@ -366,20 +386,69 @@ class VotePage(Page):
 		self.fingerprint_auth_failure_label.pack(side="top", fill="both", expand=True)	# Show failure label
 
 	def cast_vote(self, candidate):
-		# TO-DO: logic for vote casting here
-		self.fingerprint_auth_result_string.set(f"Vote for Candidate {candidate} cast successfully!")
-		self.farewell_message()
+		try:
+			token = get_jwt_token()
+	
+			decoded_token = jwt.decode(token, options={"verify_signature": False}, algorithms=[])
+			print(decoded_token)
+			user_id = decoded_token.get("userId")
+		except Exception as error:
+			print("An error occured: ", error)
+			
+		if user_id:
+			payload = {"userId": user_id, "candidateId": candidate["id"]}
+			header = {'Authorization': f'Bearer {token}'}
+			
+			server_response = None
+			try:
+				server_response = requests.patch("https://fingerprint-voter-server.onrender.com/user/vote", data=payload, headers=header)
+				if server_response.status_code == requests.codes.ok:
+					self.farewell_message()
+					
+					self.logout_user(header)
+					self.logout_label = tk.Label(self.farewell_message_frame, text="You have been logged out from the system.", font="helvetica 15", bg="#fff", foreground="green")
+					self.logout_label.pack()
+					self.logout_label.place(relx=0.5, rely=0.8, anchor="center")
+					
+					self.after(3000, lambda: self.main_view.show_login_page())
+					
+					self.vote_cast_title_label.pack_forget()
+				else:
+					server_error = server_response.json()["error"]
+					if server_error != "":
+						print("An error occured: ", server_error)
+			except Exception as error:
+				print("An error occured: ", error)
+
+	def logout_user(self, header):
+		server_response = None
+		try:
+			server_response = requests.post("https://fingerprint-voter-server.onrender.com/logout", headers=header)
+			if server_response.status_code == requests.codes.ok:
+				try:
+					kr.delete_password("fp-voter", "jwt_token")
+				except Exception as error:
+					print("An error occured: ", server_error)
+			else:
+				server_error = server_response.json()["error"]
+				if server_error != "":
+					print("An error occured: ", server_error)
+		except Exception as error:
+			print("An error occured: ", error)
 
 	def farewell_message(self):
 		# Clear existing components
-		self.title_label.pack_forget()
+		self.vote_cast_title_label.pack_forget()
 		self.instruction_label.pack_forget()
-		self.vote_button_1.pack_forget()
-		self.vote_button_2.pack_forget()
-		self.vote_button_3.pack_forget()
-		# Show farewell msg
-		self.title_label.config(text="Thank you for voting!", font="helvetica 20 bold")
-		self.title_label.pack(side="top", fill="both", expand=True)
+		self.vote_options_container.pack_forget()
+		
+		self.farewell_message_frame.pack_propagate(0)
+		
+		self.farewell_msg_label = tk.Label(self.farewell_message_frame, text="Thank you for voting!", font="helvetica 20 bold", bg="#fff")
+		self.farewell_msg_label.pack(pady=50)
+		self.farewell_msg_label.place(relx=0.5, rely=0.5, anchor="center")
+		
+		self.farewell_message_frame.pack()
 	
 	def determine_grid_rows_amount(self, length):
 		rows = int(length / 3)
@@ -387,8 +456,11 @@ class VotePage(Page):
 			return rows
 		return rows + 1
 	
-	def confirm_user_choice(self, name):
-		return tkinter.messagebox.askokcancel("Confirm your vote", "Are you sure you want to vote for candidate " + name + "?")
+	def handle_vote_confirmation(self, candidate):
+		confirmation =  tkinter.messagebox.askokcancel("Confirm your vote", "Are you sure you want to vote for candidate " + candidate["name"] + "?")
+		
+		if confirmation:
+			self.cast_vote(candidate)
 
 class LoginPage(Page):
 	def __init__(self, main_view, *args, **kwargs):
@@ -396,21 +468,21 @@ class LoginPage(Page):
 		self.main_view = main_view  # Store a reference to the MainView instance
 		
 		# Create a login frame
-		login_frame = tk.Frame(self, height=660, width=1320, bg="#fff", bd=2, relief="solid")
-		login_frame.pack_propagate(0)
+		self.login_frame = tk.Frame(self, height=660, width=1320, bg="#fff", bd=2, relief="solid")
+		self.login_frame.pack_propagate(0)
 		
-		self.title_label = tk.Label(login_frame, text="Login", font="helvetica 20 bold", bg="#fff")
+		self.title_label = tk.Label(self.login_frame, text="Login", font="helvetica 20 bold", bg="#fff")
 		self.title_label.pack(pady=50)
 		
-		self.username_label = tk.Label(login_frame, bg="#fff", text="Username")
-		self.username_input = tk.Entry(login_frame, width=20, bg="#fff", bd=1, relief="solid")
-		self.password_label = tk.Label(login_frame, bg="#fff", text="Password")
-		self.password_input = tk.Entry(login_frame, show="*", width=20, bg="#fff", bd=1, relief="solid")
+		self.username_label = tk.Label(self.login_frame, bg="#fff", text="Username")
+		self.username_input = tk.Entry(self.login_frame, width=20, bg="#fff", bd=1, relief="solid")
+		self.password_label = tk.Label(self.login_frame, bg="#fff", text="Password")
+		self.password_input = tk.Entry(self.login_frame, show="*", width=20, bg="#fff", bd=1, relief="solid")
 		
-		self.submit_credentials_btn = tk.Button(login_frame, text="Submit", height=1, width=8, cursor="hand2", command=lambda: attempt_login(self, self.username_input.get(), self.password_input.get()))
-		self.register_user_btn = tk.Button(login_frame, text="Don't have an account? Click here to register.", font="helvetica 12 underline", relief=tk.FLAT, cursor="hand2",  borderwidth=0, highlightthickness=0, bg="#fff", activebackground="#fff", command=lambda: self.main_view.show_register_page())
+		self.submit_credentials_btn = tk.Button(self.login_frame, text="Submit", height=1, width=8, cursor="hand2", command=lambda: self.attempt_login(self.username_input.get(), self.password_input.get()))
+		self.register_user_btn = tk.Button(self.login_frame, text="Don't have an account? Click here to register.", font="helvetica 12 underline", relief=tk.FLAT, cursor="hand2",  borderwidth=0, highlightthickness=0, bg="#fff", activebackground="#fff", command=lambda: self.main_view.show_register_page())
 		
-		self.login_success_label = tk.Label(login_frame, text="Logged in successfully!", font="helvetica 15", bg="#fff", foreground="green")
+		self.login_success_label = tk.Label(self.login_frame, text="Logged in successfully!", font="helvetica 15", bg="#fff", foreground="green")
 
 		self.username_label.pack(pady=10)
 		self.username_input.pack(pady=5)
@@ -419,48 +491,50 @@ class LoginPage(Page):
 		self.submit_credentials_btn.pack(pady=30)
 		self.register_user_btn.pack(pady=10)
 		
-		login_frame.pack()
+		self.login_frame.pack()
 		
-		def attempt_login(self, username, password):
-			credentials = {"username": username, "password": password}
-			server_response = None
-			try:
-				server_response = requests.post("https://fingerprint-voter-server.onrender.com/login", data=credentials)
-				if server_response.status_code == requests.codes.ok:
-					# Show success label
-					self.login_success_label.pack(pady=10)
+		
+	def attempt_login(self, username, password):
+		credentials = {"username": username, "password": password}
+		server_response = None
+		try:
+			server_response = requests.post("https://fingerprint-voter-server.onrender.com/login", data=credentials)
+			if server_response.status_code == requests.codes.ok:
+				# Show success label
+				self.login_success_label.pack(pady=10)
+				
+				self.main_view.schedule_label_clear(self.login_success_label, 3000)		# Hide the label after 3 seconds
+				
+				# Get the JWT token from the server
+				jwt_token = server_response.json().get("token")
+				
+				# Store the JWT token
+				kr.set_password("fp-voter", "jwt_token", jwt_token)
+				
+				# Get the fingerprint Id
+				fingerprintId = server_response.json().get("fingerprintId")
+				
+				# Update the location
+				self.main_view.update_location(fingerprintId)
+				
+				self.main_view.clear_input_fields(self.username_input, self.password_input)	# Clear username & password input fields
+				
+				self.main_view.show_vote_page()
+				print("vote page shown")
+			else:
+				server_error = server_response.json()["error"]
+				if server_error != "":
+					print("An error occured: ", server_error)
+					self.login_error_label = tk.Label(self.login_frame, text=str(server_error), font="helvetica 15", bg="#fff", foreground="red")
+					self.login_error_label.pack(pady=10)
 					
-					self.main_view.schedule_label_clear(self.login_success_label, 3000)		# Hide the label after 3 seconds
+					self.main_view.schedule_label_clear(self.login_error_label, 5000)	# Hide the label after 5 seconds
+		except Exception as error:
+			print("An error occured: ", error)
+			self.exception_label = tk.Label(self.login_frame, text=str(error), font="helvetica 15", bg="#fff", foreground="red")
+			self.exception_label.pack(pady=10)
 					
-					# Get the JWT token from the server
-					jwt_token = server_response.json().get("token")
-
-					# Store the JWT token
-					kr.set_password("fp-voter", "jwt_token", jwt_token)
-					
-					# Get the fingerprint Id
-					fingerprintId = server_response.json().get("fingerprintId")
-					
-					# Update the location
-					self.main_view.update_location(fingerprintId)
-					
-					self.main_view.clear_input_fields(self.username_input, self.password_input)	# Clear username & password input fields
-					
-					self.main_view.show_vote_page()
-				else:
-					server_error = server_response.json()["error"]
-					if server_error != "":
-						print("An error occured: ", server_error)
-						self.login_error_label = tk.Label(login_frame, text=str(server_error), font="helvetica 15", bg="#fff", foreground="red")
-						self.login_error_label.pack(pady=10)
-						
-						self.main_view.schedule_label_clear(self.login_error_label, 5000)	# Hide the label after 5 seconds
-			except Exception as error:
-				print("An error occured: ", error)
-				self.exception_label = tk.Label(login_frame, text=str(error), font="helvetica 15", bg="#fff", foreground="red")
-				self.exception_label.pack(pady=10)
-						
-				self.main_view.schedule_label_clear(self.exception_label, 5000)
+			self.main_view.schedule_label_clear(self.exception_label, 5000)
         
 class GreetingPage(Page):
     def __init__(self, *args, **kwargs):
