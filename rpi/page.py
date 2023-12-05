@@ -121,7 +121,8 @@ class RegisterPage(Page):
 		
 		self.label = tk.Label(register_frame, text="Register", font="helvetica 20 bold", bg="#fff")
 		self.label.pack(pady=50)
-
+		self.username_instruction_label = tk.Label(register_frame, bg="#fff", text="Username needs to be 6-20 characters long, no special characters.")
+		self.password_instruction_label = tk.Label(register_frame, bg="#fff", text="Password needs to be at least 8 characters long, contain a capital letter, a number and a special character.")
 		self.username_label = tk.Label(register_frame, bg="#fff", text="Username")
 		self.username_input = tk.Entry(register_frame, width=20, bg="#fff", bd=1, relief="solid")
 		self.password_label = tk.Label(register_frame, bg="#fff", text="Password")
@@ -137,7 +138,9 @@ class RegisterPage(Page):
 		self.img_error_label = tk.Label(register_frame, text="Error while capturing finger image. Please contact the election manager.", font="helvetica 15", bg="#fff", foreground="red")
 		self.storage_error_label = tk.Label(register_frame, text="Error while storing the fingerprint. Please contact the election manager.", font="helvetica 15", bg="#fff", foreground="red")
 		self.enrollment_success_label = tk.Label(register_frame, text="Enrolled successfully!", font="helvetica 15", bg="#fff", foreground="green")
-
+		
+		self.username_instruction_label.pack(pady=5)
+		self.password_instruction_label.pack(pady=5)
 		self.username_label.pack(pady=10)
 		self.username_input.pack(pady=5)
 		self.password_label.pack(pady=10)
